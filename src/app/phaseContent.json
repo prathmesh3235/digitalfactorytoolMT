@@ -1,0 +1,31 @@
+{
+    "Phase 1": {
+      "profile": "Name: Phase 1, Description: Setting of objectives",
+      "ai-potential": "AI Potential for Phase 1"
+    },
+    "Phase 2": {
+      "profile": "Name: Phase 2, Description: Establishment of the product basis",
+      "ai-potential": "AI Potential for Phase 2"
+    },
+    "Phase 3": {
+      "profile": "Name: Phase 3, Description: Concept planning,",
+      "ai-potential": "AI Potential for Phase 3"
+    },
+    "Phase 4": {
+      "profile": "Name: Phase 4, Description: Detailed planning",
+      "ai-potential": "AI Potential for Phase 4"
+    },
+    "Phase 5": {
+      "profile": "Name: Phase 5, Description: Preparation for realization",
+      "ai-potential": "AI Potential for Phase 5"
+    },
+    "Phase 6": {
+      "profile": "Name: Phase 6, Description: Monitoring of realization",
+      "ai-potential": "AI Potential for Phase 6"
+    },
+    "Phase 7": {
+      "profile": "Name: Phase 7, Description: Ramp-up support",
+      "ai-potential": "AI Potential for Phase 7"
+    }
+  }
+  
