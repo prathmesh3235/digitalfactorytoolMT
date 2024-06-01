@@ -14,8 +14,8 @@ export default function PhasesComponent() {
   ];
   
   const [activePhase, setActivePhase] = useState('Phase 1');
-  const [profileContent, setProfileContent] = useState('');
-  const [aiPotentialContent, setAiPotentialContent] = useState('');
+  const [profileContent, setProfileContent] = useState({});
+  const [aiPotentialContent, setAiPotentialContent] = useState([]);
 
   useEffect(() => {
     setProfileContent(phaseContent[activePhase]['profile']);
@@ -59,14 +59,47 @@ export default function PhasesComponent() {
           <div className="flex space-x-4 mb-4">
             <div className="flex-1">
               <div className="p-4 bg-orange-500 text-white rounded-lg text-center mb-2">Profile</div>
-              <div className="p-4 bg-gray-100 text-black rounded-lg shadow-lg">
-                {profileContent}
+              <div className="p-4 bg-gray-100 text-black rounded-lg shadow-lg grid grid-cols-2 gap-4">
+                <div>
+                  <strong>Name:</strong> {profileContent.name}
+                </div>
+                <div>
+                  <strong>Description:</strong> {profileContent.description}
+                </div>
+                <div>
+                  <strong>Method:</strong> {profileContent.method}
+                </div>
+                <div>
+                  <strong>Configuration:</strong> {profileContent.configuration}
+                </div>
+                <div>
+                  <strong>Concept:</strong> {profileContent.concept}
+                </div>
+                <div>
+                  <strong>Aim:</strong> {profileContent.aim}
+                </div>
+                <div>
+                  <strong>Goal:</strong> {profileContent.goal}
+                </div>
+                <div>
+                  <strong>Time Required:</strong> {profileContent.time_required}
+                </div>
+                <div>
+                  <strong>Tasks:</strong> {profileContent.tasks}
+                </div>
+                <div>
+                  <strong>Background:</strong> {profileContent.background}
+                </div>
               </div>
             </div>
             <div className="flex-1">
               <div className="p-4 bg-green-500 text-white rounded-lg text-center mb-2">AI Potential</div>
-              <div className="p-4 bg-gray-100 text-black rounded-lg shadow-lg">
-                {aiPotentialContent}
+              <div className="grid grid-cols-2 gap-4">
+                {aiPotentialContent.map((potential, index) => (
+                  <div key={index} className="p-4 bg-white text-black rounded-lg shadow-lg border border-gray-300">
+                    {potential}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
