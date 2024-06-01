@@ -1,18 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import "../src/app/globals.css";
+import phaseContent from "../src/app/phaseContent.json";
 
 export default function PhasesComponent() {
-  const phases = ['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4', 'Phase 5'];
-  const [activePhase, setActivePhase] = useState(null);
-  const [activeTab, setActiveTab] = useState('profile');
+  const phases = [
+    { name: 'Phase 1', description: 'Setting of objectives' },
+    { name: 'Phase 2', description: 'Establishment of the product basis' },
+    { name: 'Phase 3', description: 'Concept planning' },
+    { name: 'Phase 4', description: 'Detailed planning' },
+    { name: 'Phase 5', description: 'Preparation for realization' },
+    { name: 'Phase 6', description: 'Monitoring of realization' },
+    { name: 'Phase 7', description: 'Ramp-up support' },
+  ];
+  
+  const [activePhase, setActivePhase] = useState('Phase 1');
+  const [profileContent, setProfileContent] = useState({});
+  const [aiPotentialContent, setAiPotentialContent] = useState([]);
+
+  useEffect(() => {
+    setProfileContent(phaseContent[activePhase]['profile']);
+    setAiPotentialContent(phaseContent[activePhase]['ai-potential']);
+  }, [activePhase]);
 
   const handlePhaseClick = (phase) => {
     setActivePhase(phase);
-    setActiveTab('profile');  // Reset tab to profile when phase changes
-  };
-
-  const handleTabClick = (tab) => {
-    setActiveTab(tab);
   };
 
   return (
@@ -22,36 +33,75 @@ export default function PhasesComponent() {
         <div className="bg-blue-800 text-white p-4 rounded">AI Potentials in Factory Planning</div>
         <div className="bg-blue-800 text-white p-4 rounded">Digitalisation Potentials in Factory Planning</div>
       </div>
-      <div className="flex space-x-4">
+      <div className="flex space-x-4 p-2 w-full">
         {phases.map((phase, index) => (
           <div
             key={index}
-            className={`bg-green-500 text-white p-4 rounded flex items-center justify-center cursor-pointer ${
-              activePhase === phase ? 'bg-orange-500' : 'bg-green-500'
+            className={`relative text-white p-4 flex items-center justify-center cursor-pointer ${
+              activePhase === phase.name ? 'bg-orange-500' : 'bg-green-500'
             }`}
-            onClick={() => handlePhaseClick(phase)}
+            onClick={() => handlePhaseClick(phase.name)}
+            style={{ 
+              clipPath: 'polygon(10% 0%, 100% 0%, 90% 50%, 100% 100%, 10% 100%, 0% 50%)', 
+              padding: '1rem 2rem',
+              transition: 'background-color 0.3s'
+            }}
           >
-            {phase}
+            <div className="text-center">
+              <div>{phase.name}</div>
+              <div className="text-sm">{phase.description}</div>
+            </div>
           </div>
         ))}
       </div>
       {activePhase && (
-        <div className="flex space-x-4 mt-4">
-          <div
-            className={`p-4 rounded cursor-pointer ${
-              activeTab === 'profile' ? 'bg-orange-500 text-white' : 'bg-green-500 text-white'
-            }`}
-            onClick={() => handleTabClick('profile')}
-          >
-            Profile
-          </div>
-          <div
-            className={`p-4 rounded cursor-pointer ${
-              activeTab === 'ai-potential' ? 'bg-orange-500 text-white' : 'bg-green-500 text-white'
-            }`}
-            onClick={() => handleTabClick('ai-potential')}
-          >
-            AI Potential
+        <div className="flex flex-col mt-4 w-full p-3">
+          <div className="flex space-x-4 mb-4">
+            <div className="flex-1">
+              <div className="p-4 bg-orange-500 text-white rounded-lg text-center mb-2">Profile</div>
+              <div className="p-4 bg-gray-100 text-black rounded-lg shadow-lg grid grid-cols-2 gap-4">
+                <div>
+                  <strong>Name:</strong> {profileContent.name}
+                </div>
+                <div>
+                  <strong>Description:</strong> {profileContent.description}
+                </div>
+                <div>
+                  <strong>Method:</strong> {profileContent.method}
+                </div>
+                <div>
+                  <strong>Configuration:</strong> {profileContent.configuration}
+                </div>
+                <div>
+                  <strong>Concept:</strong> {profileContent.concept}
+                </div>
+                <div>
+                  <strong>Aim:</strong> {profileContent.aim}
+                </div>
+                <div>
+                  <strong>Goal:</strong> {profileContent.goal}
+                </div>
+                <div>
+                  <strong>Time Required:</strong> {profileContent.time_required}
+                </div>
+                <div>
+                  <strong>Tasks:</strong> {profileContent.tasks}
+                </div>
+                <div>
+                  <strong>Background:</strong> {profileContent.background}
+                </div>
+              </div>
+            </div>
+            <div className="flex-1">
+              <div className="p-4 bg-green-500 text-white rounded-lg text-center mb-2">AI Potential</div>
+              <div className="grid grid-cols-2 gap-4">
+                {aiPotentialContent.map((potential, index) => (
+                  <div key={index} className="p-4 bg-white text-black rounded-lg shadow-lg border border-gray-300">
+                    {potential}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}
