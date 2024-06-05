@@ -62,7 +62,7 @@ export default function PhasesComponent() {
               <div className="p-4 bg-gray-100 text-black rounded-lg shadow-lg grid grid-cols-2 gap-4">
                 <div>
                   <strong>Name:</strong> {profileContent.name}
-                </div>
+          </div>
                 <div>
                   <strong>Description:</strong> {profileContent.description}
                 </div>
