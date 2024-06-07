@@ -9,7 +9,7 @@ const PhaseForm = () => {
   
     const phases = Object.keys(phaseContent);
     const properties = selectedPhase ? Object.keys(phaseContent[selectedPhase]) : [];
-    const subproperties = selectedPhase ? Object.keys(phaseContent[selectedPhase].properties) : []; 
+    const profileProperties = selectedPhase ? Object.keys(phaseContent[selectedPhase].profile) : []; 
   
     const handlePhaseChange = (e) => {
       setSelectedPhase(e.target.value);
@@ -30,6 +30,9 @@ const PhaseForm = () => {
       e.preventDefault();
       console.log('Selected Phase:', selectedPhase);
       console.log('Selected Property:', selectedProperty);
+      if (selectedProperty === 'profile') {
+        console.log('Selected Sub Property:', selectedSubProperty);
+      }
     };
   
     return (
@@ -65,10 +68,48 @@ const PhaseForm = () => {
                   ))}
                 </select>
               </div>
+              {selectedProperty === 'profile' && (
+            <div className="mb-4">
+              <label htmlFor="subProperty" className="block text-gray-700 font-bold mb-2">Sub Property:</label>
+              <select
+                id="subProperty"
+                value={selectedSubProperty}
+                onChange={handleSubPropertyChange}
+                className="w-full p-2 border border-gray-300 rounded"
+              >
+                <option value="" disabled>Select a sub property</option>
+                {profileProperties.map(subProperty => (
+                  <option key={subProperty} value={subProperty}>{subProperty}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          {selectedProperty === 'ai-potential' && (
+            <div className="mb-4">
+              <label htmlFor="aiText" className="block text-gray-700 font-bold mb-2">AI Potential Information:</label>
+              <input
+                type="text"
+                id="aiText"
+                className="w-full p-2 border border-gray-300 rounded"
+              />
+            </div>
+          )}
+
+         {selectedSubProperty && (
+            <div className="mb-4">
+              <label htmlFor="subPropertyText" className="block text-gray-700 font-bold mb-2">{selectedSubProperty}:</label>
+              <input
+                type="text"
+                id="subPropertyText"
+                className="w-full p-2 border border-gray-300 rounded"
+              />
+            </div>
+          )}
+
               <button
                 type="submit"
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
-                disabled={!selectedPhase || !selectedProperty}
+                disabled={!selectedPhase || !selectedProperty || (selectedProperty === 'profile' && !selectedSubProperty)}
               >
                 Submit
               </button>
