@@ -19,6 +19,9 @@ module.exports = {
         'soft-green': '#E8F5E9',
         'light-lavender': '#F3E5F5',
       },
+      spacing: {
+        '10rem': '10rem',
+      },
     },
   },
   plugins: [],
