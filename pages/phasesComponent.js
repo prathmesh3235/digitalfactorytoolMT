@@ -15,14 +15,14 @@ export default function PhasesComponent() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    // Fetch phases data from backend
     const fetchPhases = async () => {
       try {
         const phasesData = await getPhases();
         const formattedPhases = phasesData.map(phase => ({
           id: phase.id,
           name: `Phase ${phase.phaseNo}`,
-          description: phase.title
+          description: phase.title,
+          phaseNo: phase.phaseNo
         }));
         setPhases(formattedPhases);
         setActivePhase(formattedPhases[0]);
@@ -33,7 +33,6 @@ export default function PhasesComponent() {
 
     fetchPhases();
 
-    // Check if the user is logged in
     const token = sessionStorage.getItem('token');
     if (token) {
       setIsLoggedIn(true);
@@ -66,20 +65,20 @@ export default function PhasesComponent() {
     setActivePhase(newPhases[index]);
   };
 
-  const handleKeyPress = async (event, index, key) => {
+  const handleKeyPress = async (event, index) => {
     if (event.key === 'Enter') {
       setLoading(true);
       const phase = phases[index];
       try {
-        await update(phase.id, { title: phase.description });
+        await update(phase.id, { title: phase.description, phaseNo: phase.phaseNo });
         setTimeout(() => {
           setLoading(false);
           setSuccess(true);
-          setTimeout(() => setSuccess(false), 2000); // Hide success message after 2 seconds
-        }, 1000); // Show loading for 2 seconds
+          setTimeout(() => setSuccess(false), 2000);
+        }, 1000);
       } catch (error) {
         setLoading(false);
-        console.error("Failed to update phase title", error);
+        console.error("Failed to update phase", error);
       }
     }
   };
@@ -146,19 +145,26 @@ export default function PhasesComponent() {
                         value={phase.name}
                         onChange={(e) => handlePhaseChange(index, 'name', e.target.value)}
                         className="bg-transparent border-none text-white text-center"
-                        onKeyPress={(e) => handleKeyPress(e, index, 'name')}
+                        onKeyPress={(e) => handleKeyPress(e, index)}
                       />
                       <input
                         type="text"
                         value={phase.description}
                         onChange={(e) => handlePhaseChange(index, 'description', e.target.value)}
-                        onKeyPress={(e) => handleKeyPress(e, index, 'description')}
+                        onKeyPress={(e) => handleKeyPress(e, index)}
+                        className="bg-transparent border-none text-white text-center text-sm"
+                      />
+                      <input
+                        type="text"
+                        value={phase.phaseNo}
+                        onChange={(e) => handlePhaseChange(index, 'phaseNo', e.target.value)}
+                        onKeyPress={(e) => handleKeyPress(e, index)}
                         className="bg-transparent border-none text-white text-center text-sm"
                       />
                     </>
                   ) : (
                     <>
-                      <div>{phase.name}</div>
+                      <div>{phase.name.replace(/Phase \d+/, `Phase ${phase.phaseNo}`)}</div>
                       <div className="text-sm">{phase.description}</div>
                     </>
                   )}
@@ -181,7 +187,7 @@ export default function PhasesComponent() {
                           type="text"
                           value={profileContent[key]}
                           onChange={(e) => setProfileContent({ ...profileContent, [key]: e.target.value })}
-                          onKeyPress={(e) => handleKeyPress(e, index, key)}
+                          onKeyPress={(e) => handleKeyPress(e, index)}
                           className="bg-transparent border-none w-full"
                         />
                       ) : (
@@ -205,7 +211,7 @@ export default function PhasesComponent() {
                             newAiPotentialContent[index] = e.target.value;
                             setAiPotentialContent(newAiPotentialContent);
                           }}
-                          onKeyPress={(e) => handleKeyPress(e, index, index)}
+                          onKeyPress={(e) => handleKeyPress(e, index)}
                           className="bg-transparent border-none w-full"
                         />
                       ) : (
