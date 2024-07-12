@@ -10,3 +10,9 @@ export const getPhases = async () => {
   const response = await axiosInstance.get('/phases');
   return response.data;
 };
+
+
+export const updatePhaseNo = async (id, payload) => {
+  const response = await axiosInstance.patch('/'+id, { title: phase.description, phaseNo: phase.phaseNo });
+  return response.data;
+};
