@@ -1,26 +1,54 @@
-import fraunhaufer_logo from '../public/asset/logo.png'
+import fraunhaufer_logo from '../public/asset/logo.png';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 
 const Navbar = () => {
-    return (
-      <nav className="bg-gray-500 p-4">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-10rem">
-            <Image src={fraunhaufer_logo} height={100} width={200}/>
-            <span className="text-white text-xl font-bold text-center ">The Digital Factory Planning Tool</span>
-          </div>
-          <div>
-            <Link href='/admin'>
-            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-              Login
-            </button>
-            </Link>
-          </div>
-        </div>
-      </nav>
-    );
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('token');
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('token');
+    setIsLoggedIn(false);
+    router.push('/Login');
   };
-  
-  export default Navbar;
-  
+
+  return (
+    <nav className="bg-gray-200 p-4">
+      <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
+        <div className="flex items-center gap-4 mb-4 md:mb-0">
+          <Image src={fraunhaufer_logo} height={50} width={100} />
+          <span className="text-black text-xl font-bold text-center">
+            The Digital Factory Planning Tool
+          </span>
+        </div>
+        <div>
+          {isLoggedIn ? (
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link href='/Login'>
+              <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Login
+              </button>
+            </Link>
+          )}
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;
