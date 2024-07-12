@@ -70,16 +70,24 @@ export default function PhasesComponent() {
     if (event.key === 'Enter') {
       setLoading(true);
       const phase = phases[index];
+      const updateData = {};
+
+      if (key === 'phaseNo') {
+        updateData.phaseNo = phase.phaseNo;
+      } else if (key === 'description') {
+        updateData.title = phase.description;
+      }
+
       try {
-        await update(phase.id, { title: phase.description });
+        await update(phase.id, updateData);
         setTimeout(() => {
           setLoading(false);
           setSuccess(true);
-          setTimeout(() => setSuccess(false), 2000); // Hide success message after 2 seconds
-        }, 1000); // Show loading for 2 seconds
+          setTimeout(() => setSuccess(false), 2000);
+        }, 1000);
       } catch (error) {
         setLoading(false);
-        console.error("Failed to update phase title", error);
+        console.error("Failed to update phase", error);
       }
     }
   };
@@ -143,10 +151,10 @@ export default function PhasesComponent() {
                     <>
                       <input
                         type="text"
-                        value={phase.name}
-                        onChange={(e) => handlePhaseChange(index, 'name', e.target.value)}
+                        value={phase.phaseNo}
+                        onChange={(e) => handlePhaseChange(index, 'phaseNo', e.target.value)}
                         className="bg-transparent border-none text-white text-center"
-                        onKeyPress={(e) => handleKeyPress(e, index, 'name')}
+                        onKeyPress={(e) => handleKeyPress(e, index, 'phaseNo')}
                       />
                       <input
                         type="text"
@@ -158,7 +166,7 @@ export default function PhasesComponent() {
                     </>
                   ) : (
                     <>
-                      <div>{phase.name}</div>
+                      <div>{phase.phaseNo}</div>
                       <div className="text-sm">{phase.description}</div>
                     </>
                   )}
