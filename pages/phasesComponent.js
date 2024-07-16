@@ -3,6 +3,8 @@ import "../src/app/globals.css";
 import phaseContent from "../src/app/phaseContent.json";
 import { update } from "../utils/phases.js";
 import { getPhases } from "../utils/phases.js";
+import Link from 'next/link';
+
 
 export default function PhasesComponent() {
   const [phases, setPhases] = useState([]);
@@ -101,12 +103,22 @@ export default function PhasesComponent() {
         <div className="justify-center mb-4 mt-4 md:mt-12">
           {isLoggedIn && (
             !isEditing ? (
+              <>
               <button
                 onClick={handleEditClick}
                 className="bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600 transition duration-200"
               >
                 Edit Information
               </button>
+              <Link href="/cmsForm">
+              <button
+                  style={{ marginLeft: "15px" }}
+                  className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition duration-200"
+                >
+                  Add Information
+                </button>
+                </Link>
+               </>
             ) : (
               <button
                 onClick={handleSaveClick}
