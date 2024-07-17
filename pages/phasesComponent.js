@@ -14,17 +14,6 @@ export default function PhasesComponent() {
   ];
   
   const [activePhase, setActivePhase] = useState('Phase 1');
-  const phases = [
-    { name: 'Phase 1', description: 'Setting of objectives' },
-    { name: 'Phase 2', description: 'Establishment of the product basis' },
-    { name: 'Phase 3', description: 'Concept planning' },
-    { name: 'Phase 4', description: 'Detailed planning' },
-    { name: 'Phase 5', description: 'Preparation for realization' },
-    { name: 'Phase 6', description: 'Monitoring of realization' },
-    { name: 'Phase 7', description: 'Ramp-up support' },
-  ];
-  
-  const [activePhase, setActivePhase] = useState('Phase 1');
   const [profileContent, setProfileContent] = useState({});
   const [aiPotentialContent, setAiPotentialContent] = useState([]);
 
@@ -73,7 +62,7 @@ export default function PhasesComponent() {
               <div className="p-4 bg-gray-100 text-black rounded-lg shadow-lg grid grid-cols-2 gap-4">
                 <div>
                   <strong>Name:</strong> {profileContent.name}
-                </div>
+          </div>
                 <div>
                   <strong>Description:</strong> {profileContent.description}
                 </div>
