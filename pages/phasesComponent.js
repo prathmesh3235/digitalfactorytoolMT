@@ -14,6 +14,17 @@ export default function PhasesComponent() {
   ];
   
   const [activePhase, setActivePhase] = useState('Phase 1');
+  const phases = [
+    { name: 'Phase 1', description: 'Setting of objectives' },
+    { name: 'Phase 2', description: 'Establishment of the product basis' },
+    { name: 'Phase 3', description: 'Concept planning' },
+    { name: 'Phase 4', description: 'Detailed planning' },
+    { name: 'Phase 5', description: 'Preparation for realization' },
+    { name: 'Phase 6', description: 'Monitoring of realization' },
+    { name: 'Phase 7', description: 'Ramp-up support' },
+  ];
+  
+  const [activePhase, setActivePhase] = useState('Phase 1');
   const [profileContent, setProfileContent] = useState({});
   const [aiPotentialContent, setAiPotentialContent] = useState([]);
 
