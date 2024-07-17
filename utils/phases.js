@@ -16,3 +16,8 @@ export const updatePhaseNo = async (id, payload) => {
   const response = await axiosInstance.patch('/'+id, { title: phase.description, phaseNo: phase.phaseNo });
   return response.data;
 };
+
+export const createPhase = async (payload) => {
+  const response = await axiosInstance.post('/phases', payload);
+  return response.data;
+};
