@@ -5,7 +5,6 @@ import { update } from "../utils/phases.js";
 import { getPhases } from "../utils/phases.js";
 import Link from 'next/link';
 
-
 export default function PhasesComponent() {
   const [phases, setPhases] = useState([]);
   const [activePhase, setActivePhase] = useState(null);
@@ -42,9 +41,16 @@ export default function PhasesComponent() {
   }, []);
 
   useEffect(() => {
+    
     if (activePhase) {
-      setProfileContent(phaseContent[activePhase.name]['profile']);
-      setAiPotentialContent(phaseContent[activePhase.name]['ai-potential']);
+      const phaseName = activePhase.name.trim();
+      console.log("Active phase name:", phaseName);
+      if (phaseContent[phaseName]) {
+        setProfileContent(phaseContent[phaseName]['profile']);
+        setAiPotentialContent(phaseContent[phaseName]['ai-potential']);
+      } else {
+        console.error("Active phase content not found in phaseContent.json");
+      }
     }
   }, [activePhase]);
 
