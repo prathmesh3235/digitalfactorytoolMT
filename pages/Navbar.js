@@ -1,42 +1,33 @@
-import fraunhaufer_logo from "../public/asset/logo.png";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+// components/Navbar.js
+import fraunhaufer_logo from '../public/asset/logo.png';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
+    const token = sessionStorage.getItem('token');
     if (token) {
       setIsLoggedIn(true);
     }
   }, []);
 
   const handleLogout = () => {
-    sessionStorage.removeItem("token");
+    sessionStorage.removeItem('token');
     setIsLoggedIn(false);
-    router.push("/Login");
+    router.push('/Login');
   };
 
   return (
-    <nav className="bg-gray-200 p-4">
-      <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
+    <nav className="bg-white shadow-md">
+      <div className="container mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center">
         <div className="flex items-center gap-4 mb-4 md:mb-0">
-          <div style={{ position: 'relative', width: '100px', height: '50px' }}>
-            <Image
-              src={fraunhaufer_logo}
-              alt="Fraunhofer Logo"
-              fill
-              sizes="100px"
-              style={{
-                objectFit: 'contain'
-              }}
-            />
-          </div>
-          <span className="text-black text-xl font-bold text-center">
+          <Image src={fraunhaufer_logo} height={50} width={100} alt="Fraunhofer Logo" />
+          <span className="text-[#1F2937] text-xl font-bold text-center">
             The Digital Factory Planning Tool
           </span>
         </div>
@@ -44,13 +35,13 @@ const Navbar = () => {
           {isLoggedIn ? (
             <button
               onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              className="btn-secondary hover:bg-red-50 hover:text-red-600 hover:border-red-600"
             >
               Logout
             </button>
           ) : (
-            <Link href="/Login">
-              <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            <Link href='/Login'>
+              <button className="btn-primary">
                 Login
               </button>
             </Link>

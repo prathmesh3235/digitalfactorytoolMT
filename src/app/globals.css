@@ -2,32 +2,88 @@
 @tailwind components;
 @tailwind utilities;
 
-/* :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+    /* Fraunhofer IEM Brand Colors */
+    --primary: #00AB8E;     /* Main teal/green */
+    --primary-dark: #008C73; /* Darker shade for hover states */
+    --secondary: #4B9B47;   /* Secondary green */
+    --accent: #B5BD00;      /* Accent lime green */
+    --neutral-dark: #1F2937; /* Dark text */
+    --neutral-light: #F3F4F6; /* Light background */
+    --white: #FFFFFF;
+    --error: #EF4444;       /* Error red */
+    --success: #10B981;     /* Success green */
   }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-} */
-
-/* @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+@layer components {
+  /* Button Styles */
+  .btn-primary {
+    @apply bg-[#00AB8E] text-white px-4 py-2 rounded hover:bg-[#008C73] transition-colors duration-200;
   }
-} */
+
+  .btn-secondary {
+    @apply bg-white text-[#00AB8E] border border-[#00AB8E] px-4 py-2 rounded hover:bg-[#F3F4F6] transition-colors duration-200;
+  }
+
+  .btn-accent {
+    @apply bg-[#B5BD00] text-white px-4 py-2 rounded hover:brightness-95 transition-colors duration-200;
+  }
+
+  /* Card Styles */
+  .card {
+    @apply bg-white rounded-lg shadow-md p-6 border border-gray-200;
+  }
+
+  /* Phase Button Styles */
+  .phase-button {
+    @apply relative text-white p-4 flex items-center justify-center cursor-pointer transition-colors duration-200;
+  }
+
+  .phase-button-active {
+    @apply bg-[#00AB8E];
+  }
+
+  .phase-button-inactive {
+    @apply bg-[#4B9B47];
+  }
+
+  /* Header Styles */
+  .section-header {
+    @apply text-[#00AB8E] text-xl font-semibold mb-4;
+  }
+
+  /* Navigation Styles */
+  .nav-link {
+    @apply text-[#1F2937] hover:text-[#00AB8E] transition-colors duration-200;
+  }
+
+  /* Form Styles */
+  .form-input {
+    @apply w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#00AB8E];
+  }
+
+  .form-label {
+    @apply block text-[#1F2937] font-medium mb-2;
+  }
+
+  /* Table Styles */
+  .table-header {
+    @apply bg-[#F3F4F6] text-[#1F2937] px-4 py-2;
+  }
+
+  .table-cell {
+    @apply border-b border-gray-200 px-4 py-2;
+  }
+
+  /* Profile Section Styles */
+  .profile-section {
+    @apply bg-white rounded-lg shadow-md p-6 mb-4;
+  }
+
+  /* AI Potential Section Styles */
+  .ai-potential-card {
+    @apply bg-[#F3F4F6] rounded-lg p-4 mb-4 border-l-4 border-[#00AB8E];
+  }
+}
