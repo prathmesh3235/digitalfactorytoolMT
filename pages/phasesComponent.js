@@ -43,8 +43,8 @@ export default function PhasesComponent() {
 
   useEffect(() => {
     if (activePhase) {
-      setProfileContent(phaseContent[activePhase.name]['profile']);
-      setAiPotentialContent(phaseContent[activePhase.name]['ai-potential']);
+      // setProfileContent(phaseContent[activePhase.name]['profile']);
+      // setAiPotentialContent(phaseContent[activePhase.name]['ai-potential']);
     }
   }, [activePhase]);
 
@@ -104,21 +104,21 @@ export default function PhasesComponent() {
           {isLoggedIn && (
             !isEditing ? (
               <>
-              <button
-                onClick={handleEditClick}
-                className="bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600 transition duration-200"
-              >
-                Edit Information
-              </button>
-              <Link href="/cmsForm">
-              <button
-                  style={{ marginLeft: "15px" }}
-                  className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition duration-200"
+                <button
+                  onClick={handleEditClick}
+                  className="bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600 transition duration-200"
                 >
-                  Add Information
+                  Edit Information
                 </button>
+                <Link href="/cmsForm">
+                  <button
+                    style={{ marginLeft: "15px" }}
+                    className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition duration-200"
+                  >
+                    Add Information
+                  </button>
                 </Link>
-               </>
+              </>
             ) : (
               <button
                 onClick={handleSaveClick}
@@ -139,12 +139,11 @@ export default function PhasesComponent() {
             {phases.map((phase, index) => (
               <div
                 key={index}
-                className={`relative text-white p-4 flex items-center justify-center cursor-pointer ${
-                  activePhase && activePhase.id === phase.id ? 'bg-orange-500' : 'bg-green-500'
-                }`}
+                className={`relative text-white p-4 flex items-center justify-center cursor-pointer ${activePhase && activePhase.id === phase.id ? 'bg-orange-500' : 'bg-green-500'
+                  }`}
                 onClick={() => handlePhaseClick(phase)}
-                style={{ 
-                  clipPath: 'polygon(10% 0%, 100% 0%, 90% 50%, 100% 100%, 10% 100%, 0% 50%)', 
+                style={{
+                  clipPath: 'polygon(10% 0%, 100% 0%, 90% 50%, 100% 100%, 10% 100%, 0% 50%)',
                   padding: '1rem 2rem',
                   transition: 'background-color 0.3s'
                 }}
@@ -193,7 +192,7 @@ export default function PhasesComponent() {
                 <div className="p-4 bg-gray-100 text-black rounded-lg shadow-lg grid grid-cols-1 md:grid-cols-2 gap-4">
                   {Object.keys(profileContent).map((key, index) => (
                     <div key={index}>
-                      <strong>{key.charAt(0).toUpperCase() + key.slice(1)}:</strong> 
+                      <strong>{key.charAt(0).toUpperCase() + key.slice(1)}:</strong>
                       {isEditing ? (
                         <input
                           type="text"
