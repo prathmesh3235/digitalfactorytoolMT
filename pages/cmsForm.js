@@ -27,9 +27,15 @@ export default function PhaseForm() {
   const [potentials, setPotentials] = useState([]);
 
   // Add Phase form fields
+  const [showForm, setShowForm] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState('');
+  const [selectedSubProperty, setSelectedSubProperty] = useState('');
+  const [profileProperties, setProfileProperties] = useState([]);
+  const [properties, setProperties] = useState([]);
+
   const [newPhaseNo, setNewPhaseNo] = useState('');
-  const [newTitle, setNewTitle] = useState('');
-  const [newProfileInfo, setNewProfileInfo] = useState('');
+const [newTitle, setNewTitle] = useState('');
+const [newProfileInfo, setNewProfileInfo] = useState('');
 
   useEffect(() => {
     const fetchPhases = async () => {
@@ -56,6 +62,55 @@ export default function PhaseForm() {
     };
     fetchPotentials();
   }, [selectedPhase]);
+
+  useEffect(() => {
+    const fetchPhases = async () => {
+      try {
+        const response = await axiosInstance.get('/phases');
+        setPhases(response.data);
+      } catch (error) {
+        console.error('Failed to fetch phases:', error);
+      }
+    };
+    fetchPhases();
+  }, []);
+
+  const handlePhaseChange = (e) => {
+    setSelectedPhase(e.target.value);
+    setSelectedProperty('');
+    setSelectedSubProperty('');
+  };
+
+  const handlePropertyChange = (e) => {
+    setSelectedProperty(e.target.value);
+    setSelectedSubProperty('');
+  };
+
+  const handleSubPropertyChange = (e) => {
+    setSelectedSubProperty(e.target.value);
+  };
+
+  const handlePhaseFormSubmit = async (e) => {
+    e.preventDefault();
+    const payload = {
+      phaseNo,
+      title,
+      profile_info: profileInfo,
+    };
+    try {
+      const response = await axiosInstance.post('/phases', payload);
+      setNotification({ show: true, message: 'Phase created successfully!', type: 'success' });
+      setPhaseNo('');
+      setTitle('');
+      setProfileInfo('');
+      setShowForm(false);
+      
+      const updatedPhases = await axiosInstance.get('/phases');
+      setPhases(updatedPhases.data);
+    } catch (error) {
+      setNotification({ show: true, message: 'Failed to create phase', type: 'error' });
+    }
+  };
 
   const handlePhaseSubmit = async (e) => {
     e.preventDefault();
@@ -164,54 +219,66 @@ export default function PhaseForm() {
           </button>
           <button
             className={`flex-1 py-2 px-4 ${
-              activeTab === 'addPhase' 
+              activeTab === 'phases' 
                 ? 'bg-blue-500 text-white' 
                 : 'bg-gray-200 text-gray-800'
             }`}
-            onClick={() => setActiveTab('addPhase')}
+            onClick={() => setActiveTab('phases')}
           >
-            Add Phase
+            Phases
           </button>
         </div>
 
-        {activeTab === 'phase' ? (
-          <form onSubmit={handlePhaseSubmit}>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Phase No:</label>
-              <input
-                type="text"
-                value={phaseNo}
-                onChange={(e) => setPhaseNo(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Title:</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Profile Info:</label>
-              <input
-                type="text"
-                value={profileInfo}
-                onChange={(e) => setProfileInfo(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded"
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-              disabled={!phaseNo || !title || !profileInfo}
-            >
-              Submit Phase
-            </button>
-          </form>
-        ) : activeTab === 'aiPotential' ? (
+        {activeTab === 'phases' ? (
+          
+            <form onSubmit={handlePhaseFormSubmit}>
+              <div className="mb-4">
+                <label htmlFor="phaseNo" className="block text-gray-700 font-bold mb-2">Phase No:</label>
+                <input
+                  type="text"
+                  id="phaseNo"
+                  value={phaseNo}
+                  onChange={(e) => setPhaseNo(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="title" className="block text-gray-700 font-bold mb-2">Title:</label>
+                <input
+                  type="text"
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="profileInfo" className="block text-gray-700 font-bold mb-2">Profile Info:</label>
+                <input
+                  type="text"
+                  id="profileInfo"
+                  value={profileInfo}
+                  onChange={(e) => setProfileInfo(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded"
+                />
+              </div>
+              <button
+                type="submit"
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
+                disabled={!phaseNo || !title || !profileInfo}
+              >
+                Submit
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-full mt-4"
+              >
+                Cancel
+              </button>
+            </form>
+          )
+         : activeTab === 'aiPotential' ? (
           <form onSubmit={handleAIPotentialSubmit}>
             <div className="mb-4">
               <label className="block text-gray-700 mb-2">Select Phase:</label>
@@ -269,9 +336,9 @@ export default function PhaseForm() {
             {potentials.length > 0 && (
               <div className="mt-6">
                 <h3 className="text-lg font-bold mb-2">Existing Potentials:</h3>
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-60 overflow-y-auto p-2" style={{ scrollbarWidth: 'thin' }}>
                   {potentials.map((potential) => (
-                    <div key={potential.id} className="p-3 bg-gray-50 rounded">
+                    <div key={potential.id} className="p-3 bg-gray-50 rounded shadow-sm">
                       <div className="font-bold">{potential.title}</div>
                       <div className="text-sm text-gray-600">{potential.category}</div>
                       <div className="text-sm mt-1">{potential.description}</div>
