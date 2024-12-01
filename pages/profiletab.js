@@ -123,11 +123,9 @@ const PhaseProfile = ({ phaseId, isEditing }) => {
       const response = await axios.get(`/profile/${phaseId}`);
       setProfileData({
         phaseDetails: {
-          title: `Phase ${phaseId}: ${
-            response.data?.sections[0]?.section_title || "Detailed Planning"
-          }`,
+          title: `Phase ${response.data.phaseDetails.phaseNo}: ${response.data.phaseDetails.title}`
         },
-        sections: response.data?.sections || [],
+        sections: response.data.sections || []
       });
       setError(null);
     } catch (err) {
