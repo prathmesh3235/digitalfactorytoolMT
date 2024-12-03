@@ -7,21 +7,23 @@ import AIPotentialsSection from "./AIPotentialsSection";
 import PhaseProfile from "./profiletab";
 
 export default function PhasesComponent() {
+  // Existing states
   const [phases, setPhases] = useState([]);
   const [activePhase, setActivePhase] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // New state for active tab
+  const [activeTab, setActiveTab] = useState('factory');
 
+  // Existing functions remain the same...
   const formatPhaseDescription = (text) => {
     const words = text.split(" ");
     if (words.length <= 2) return text;
-
     const midPoint = Math.ceil(words.length / 2);
     const firstLine = words.slice(0, midPoint).join(" ");
     const secondLine = words.slice(midPoint).join(" ");
-
     return [firstLine, secondLine];
   };
 
@@ -43,7 +45,6 @@ export default function PhasesComponent() {
     };
 
     fetchPhases();
-
     const token = sessionStorage.getItem("token");
     if (token) {
       setIsLoggedIn(true);
@@ -54,14 +55,8 @@ export default function PhasesComponent() {
     setActivePhase(phase);
   };
 
-  const handleEditClick = () => {
-    setIsEditing(true);
-  };
-
-  const handleSaveClick = () => {
-    setIsEditing(false);
-  };
-
+  const handleEditClick = () => setIsEditing(true);
+  const handleSaveClick = () => setIsEditing(false);
   const handlePhaseChange = (index, key, value) => {
     const newPhases = [...phases];
     newPhases[index][key] = value;
@@ -90,6 +85,101 @@ export default function PhasesComponent() {
     }
   };
 
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'ai':
+        return (
+          <>
+            {/* Show phases chevron in AI tab too */}
+            <div className="w-full overflow-x-auto mb-6 pb-2">
+              <div className="flex min-w-max px-4">
+                {phases.map((phase, index) => {
+                  const description = formatPhaseDescription(phase.description);
+                  const isMultiline = Array.isArray(description);
+  
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => handlePhaseClick(phase)}
+                      className={`relative h-[70px] min-w-[180px] flex items-center justify-center 
+                        ${activePhase && activePhase.id === phase.id 
+                          ? "bg-[#00AB8E] text-white" 
+                          : "bg-[#e0e0e0] text-gray-700 hover:bg-[#00AB8E] hover:text-white"
+                        } transition-colors duration-200 mx-2 first:ml-0 last:mr-0`}
+                      style={{
+                        clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%, 20px 50%)",
+                        filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))",
+                      }}
+                    >
+                      <div className="text-center px-3 flex flex-col items-center justify-center w-full py-2">
+                        <div className="font-medium text-sm mb-1">{phase.name}</div>
+                        {isMultiline ? (
+                          <>
+                            <div className="text-xs leading-tight">{description[0]}</div>
+                            <div className="text-xs leading-tight">{description[1]}</div>
+                          </>
+                        ) : (
+                          <div className="text-xs">{description}</div>
+                        )}
+                      </div>
+                      {index < phases.length - 1 && (
+                        <div
+                          className="absolute right-[-30px] w-[20px] h-[2px] bg-gray-300 top-1/2 transform -translate-y-1/2 z-10"
+                          style={{ right: "-25px" }}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {/* AI Potentials content */}
+            <div className="w-full">
+              <AIPotentialsSection
+                phaseId={activePhase?.id}
+                isEditing={isEditing}
+                token={sessionStorage.getItem("token")}
+                fullWidth={true}
+              />
+            </div>
+          </>
+        );
+      case 'matrix':
+        return (
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full">
+            <h2 className="text-2xl font-semibold text-[#00AB8E] mb-4">Interface Matrix</h2>
+            <div className="grid grid-cols-7 gap-2">
+              {Array(7).fill(null).map((_, i) => (
+                Array(7).fill(null).map((_, j) => (
+                  <div 
+                    key={`${i}-${j}`} 
+                    className={`h-12 border ${i === j ? 'bg-gray-100' : 'hover:bg-[#00AB8E]/10'} 
+                      flex items-center justify-center text-sm font-medium text-gray-600`}
+                  >
+                    {i === j ? `P${i + 1}` : ''}
+                  </div>
+                ))
+              ))}
+            </div>
+          </div>
+        );
+      default:
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+            <PhaseProfile phaseId={activePhase?.id} isEditing={isEditing} />
+            <div className="grid grid-cols-1 gap-6 w-full">
+              <AIPotentialsSection
+                phaseId={activePhase?.id}
+                isEditing={isEditing}
+                token={sessionStorage.getItem("token")}
+              />
+            </div>
+          </div>
+        );
+    }
+  };
+
   return (
     <div className="relative flex flex-col items-center p-4 max-w-[1400px] mx-auto">
       {/* Loading and Success Overlays */}
@@ -108,8 +198,8 @@ export default function PhasesComponent() {
 
       {/* Action Buttons */}
       <div className="flex justify-center gap-3 my-4 w-full">
-        {isLoggedIn &&
-          (!isEditing ? (
+        {isLoggedIn && (
+          !isEditing ? (
             <>
               <button
                 onClick={handleEditClick}
@@ -130,120 +220,99 @@ export default function PhasesComponent() {
             >
               Save Information
             </button>
-          ))}
+          )
+        )}
       </div>
 
       {/* Header Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full mb-4">
-        <div className="bg-[#00AB8E] text-white p-3 rounded text-center font-medium">
-          Factory Planning
-        </div>
-        <div className="bg-[#00AB8E] text-white p-3 rounded text-center font-medium">
-          AI Potentials in Factory Planning
-        </div>
-        <div className="bg-[#00AB8E] text-white p-3 rounded text-center font-medium">
-          Digitalisation Potentials in Factory Planning
-        </div>
+        {[
+          { id: 'factory', label: 'Factory Planning' },
+          { id: 'ai', label: 'AI Potentials in Factory Planning' },
+          { id: 'matrix', label: 'Interface Matrix' }
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`p-3 rounded text-center font-medium transition-colors duration-200
+              ${activeTab === tab.id 
+                ? 'bg-[#00AB8E] text-white' 
+                : 'bg-[#e0e0e0] text-gray-700 hover:bg-[#00AB8E] hover:text-white'}`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {/* Phase Chevrons */}
-      <div className="w-full overflow-x-auto mb-6 pb-2">
-        <div className="flex min-w-max px-4">
-          {phases.map((phase, index) => {
-            const description = formatPhaseDescription(phase.description);
-            const isMultiline = Array.isArray(description);
+      {/* Phase Chevrons - Only show in factory tab */}
+      {activeTab === 'factory' && (
+        <div className="w-full overflow-x-auto mb-6 pb-2">
+          <div className="flex min-w-max px-4">
+            {phases.map((phase, index) => {
+              const description = formatPhaseDescription(phase.description);
+              const isMultiline = Array.isArray(description);
 
-            return (
-              <button
-                key={index}
-                onClick={() => handlePhaseClick(phase)}
-                className={`relative h-[70px] min-w-[180px] flex items-center justify-center 
-                  ${
-                    activePhase && activePhase.id === phase.id
-                      ? "bg-[#00AB8E] text-white"
+              return (
+                <button
+                  key={index}
+                  onClick={() => handlePhaseClick(phase)}
+                  className={`relative h-[70px] min-w-[180px] flex items-center justify-center 
+                    ${activePhase && activePhase.id === phase.id 
+                      ? "bg-[#00AB8E] text-white" 
                       : "bg-[#e0e0e0] text-gray-700 hover:bg-[#00AB8E] hover:text-white"
-                  } 
-                  transition-colors duration-200 mx-2 first:ml-0 last:mr-0`}
-                style={{
-                  clipPath:
-                    "polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%, 20px 50%)",
-                  filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))",
-                }}
-              >
-                <div className="text-center px-3 flex flex-col items-center justify-center w-full py-2">
-                  {isEditing ? (
-                    <>
-                      <input
-                        type="text"
-                        value={phase.name}
-                        onChange={(e) =>
-                          handlePhaseChange(index, "name", e.target.value)
-                        }
-                        className="bg-transparent border-none text-inherit text-center w-full text-sm font-medium"
-                        onKeyPress={(e) => handleKeyPress(e, index)}
-                      />
-                      <input
-                        type="text"
-                        value={phase.description}
-                        onChange={(e) =>
-                          handlePhaseChange(
-                            index,
-                            "description",
-                            e.target.value
-                          )
-                        }
-                        onKeyPress={(e) => handleKeyPress(e, index)}
-                        className="bg-transparent border-none text-inherit text-center text-xs w-full mt-1"
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <div className="font-medium text-sm mb-1">
-                        {phase.name}
-                      </div>
-                      {isMultiline ? (
-                        <>
-                          <div className="text-xs leading-tight">
-                            {description[0]}
-                          </div>
-                          <div className="text-xs leading-tight">
-                            {description[1]}
-                          </div>
-                        </>
-                      ) : (
-                        <div className="text-xs">{description}</div>
-                      )}
-                    </>
+                    } transition-colors duration-200 mx-2 first:ml-0 last:mr-0`}
+                  style={{
+                    clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%, 20px 50%)",
+                    filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))",
+                  }}
+                >
+                  <div className="text-center px-3 flex flex-col items-center justify-center w-full py-2">
+                    {isEditing ? (
+                      <>
+                        <input
+                          type="text"
+                          value={phase.name}
+                          onChange={(e) => handlePhaseChange(index, "name", e.target.value)}
+                          className="bg-transparent border-none text-inherit text-center w-full text-sm font-medium"
+                          onKeyPress={(e) => handleKeyPress(e, index)}
+                        />
+                        <input
+                          type="text"
+                          value={phase.description}
+                          onChange={(e) => handlePhaseChange(index, "description", e.target.value)}
+                          onKeyPress={(e) => handleKeyPress(e, index)}
+                          className="bg-transparent border-none text-inherit text-center text-xs w-full mt-1"
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <div className="font-medium text-sm mb-1">{phase.name}</div>
+                        {isMultiline ? (
+                          <>
+                            <div className="text-xs leading-tight">{description[0]}</div>
+                            <div className="text-xs leading-tight">{description[1]}</div>
+                          </>
+                        ) : (
+                          <div className="text-xs">{description}</div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                  {index < phases.length - 1 && (
+                    <div
+                      className="absolute right-[-30px] w-[20px] h-[2px] bg-gray-300 top-1/2 transform -translate-y-1/2 z-10"
+                      style={{ right: "-25px" }}
+                    />
                   )}
-                </div>
-
-                {/* Add connecting line */}
-                {index < phases.length - 1 && (
-                  <div
-                    className="absolute right-[-30px] w-[20px] h-[2px] bg-gray-300 top-1/2 transform -translate-y-1/2 z-10"
-                    style={{ right: "-25px" }}
-                  />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Content Cards */}
-      {activePhase && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
-          <PhaseProfile phaseId={activePhase.id} isEditing={isEditing} />
-
-          <div className="grid grid-cols-1 gap-6 w-full">
-            <AIPotentialsSection
-              phaseId={activePhase.id}
-              isEditing={isEditing}
-              token={sessionStorage.getItem("token")}
-            />
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
+
+      {/* Dynamic Content Area */}
+      {activePhase && renderContent()}
     </div>
   );
 }
