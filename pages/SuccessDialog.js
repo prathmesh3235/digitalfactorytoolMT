@@ -12,7 +12,7 @@ const SuccessDialog = ({ open, handleClose, message }) => {
     if (open) {
       const timer = setTimeout(() => {
         handleClose();
-      }, 1000); // Close after 2 seconds
+      }, 1000);
       return () => clearTimeout(timer);
     }
   }, [open, handleClose]);
@@ -25,22 +25,50 @@ const SuccessDialog = ({ open, handleClose, message }) => {
       aria-describedby="alert-dialog-description"
       PaperProps={{
         style: {
-          backgroundColor: '#f9f9f9',
-          boxShadow: 'none',
+          backgroundColor: '#ffffff',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          borderRadius: '4px',
+          padding: '16px',
+          maxWidth: '400px'
         },
       }}
     >
-      <DialogTitle id="alert-dialog-title" style={{ color: '#4caf50' }}>
+      <DialogTitle 
+        id="alert-dialog-title" 
+        style={{ 
+          color: '#32699B',
+          fontWeight: 600,
+          padding: '8px 16px'
+        }}
+      >
         {"Success"}
       </DialogTitle>
       <DialogContent>
-        <DialogContentText id="alert-dialog-description" style={{ color: '#333' }}>
+        <DialogContentText 
+          id="alert-dialog-description" 
+          style={{ 
+            color: '#333333',
+            padding: '8px 16px'
+          }}
+        >
           {message}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} style={{ color: '#4caf50' }}>
-          CLOSE
+        <Button 
+          onClick={handleClose} 
+          style={{ 
+            backgroundColor: '#3F8271',
+            color: '#ffffff',
+            textTransform: 'none',
+            padding: '6px 16px',
+            fontWeight: 500,
+            '&:hover': {
+              backgroundColor: '#367363'
+            }
+          }}
+        >
+          Close
         </Button>
       </DialogActions>
     </Dialog>

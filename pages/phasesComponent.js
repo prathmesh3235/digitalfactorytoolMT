@@ -5,6 +5,7 @@ import { getPhases } from "../utils/phases.js";
 import Link from "next/link";
 import AIPotentialsSection from "./AIPotentialsSection";
 import PhaseProfile from "./profiletab";
+import InterfaceMatrix from "./interfaceMatrix";
 
 export default function PhasesComponent() {
   // Existing states
@@ -111,6 +112,7 @@ export default function PhasesComponent() {
                         filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))",
                       }}
                     >
+                      {/* Phase button content remains the same */}
                       <div className="text-center px-3 flex flex-col items-center justify-center w-full py-2">
                         <div className="font-medium text-sm mb-1">{phase.name}</div>
                         {isMultiline ? (
@@ -146,24 +148,7 @@ export default function PhasesComponent() {
           </>
         );
       case 'matrix':
-        return (
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full">
-            <h2 className="text-2xl font-semibold text-[#00AB8E] mb-4">Interface Matrix</h2>
-            <div className="grid grid-cols-7 gap-2">
-              {Array(7).fill(null).map((_, i) => (
-                Array(7).fill(null).map((_, j) => (
-                  <div 
-                    key={`${i}-${j}`} 
-                    className={`h-12 border ${i === j ? 'bg-gray-100' : 'hover:bg-[#00AB8E]/10'} 
-                      flex items-center justify-center text-sm font-medium text-gray-600`}
-                  >
-                    {i === j ? `P${i + 1}` : ''}
-                  </div>
-                ))
-              ))}
-            </div>
-          </div>
-        );
+        return <InterfaceMatrix activePhase={activePhase} phases={phases} />;
       default:
         return (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
