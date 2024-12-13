@@ -1,215 +1,274 @@
-import React, { useState } from 'react';
-import { ArrowUpRight, Database, GitBranch } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowRight, Edit2, Trash2, Plus, AlertCircle } from 'lucide-react';
+import axiosInstance from '../utils/axiosInstance';
+import { getPhaseMatrix, createMatrixCategory, updateMatrixCategory, deleteMatrixCategory } from '../utils/matrix';
 
-const InterfaceMatrix = () => {
-  const [selectedPhase, setSelectedPhase] = useState(4);
-  const [hoveredConnection, setHoveredConnection] = useState(null);
+const MatrixComponent = () => {
+  const [selectedPhase, setSelectedPhase] = useState(1);
+  const [matrixData, setMatrixData] = useState(null);
+  const [phases, setPhases] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const phases = [
-    { id: 1, name: "Setting of objectives", shortDesc: "Strategic planning and goal definition" },
-    { id: 2, name: "Establishment of product basis", shortDesc: "Product requirements and specifications" },
-    { id: 3, name: "Concept planning", shortDesc: "Layout and process conceptualization" },
-    { id: 4, name: "Detailed planning", shortDesc: "Technical specifications and implementation" },
-    { id: 5, name: "Preparation for realization", shortDesc: "Implementation readiness" },
-    { id: 6, name: "Monitoring of realization", shortDesc: "Execution oversight" },
-    { id: 7, name: "Ramp-up support", shortDesc: "Production stabilization" }
+  const fixedCategories = [
+    { type: 'potential_equivalent', title: 'Potential Equivalent Phase' },
+    { type: 'key_outputs', title: 'Key Outputs/Concepts' },
+    { type: 'feedback', title: 'Feedback to Product Development' },
+    { type: 'influence', title: 'Influence on Factory Planning' },
+    { type: 'outcomes', title: 'Outcomes' }
   ];
 
-  const connectionTypes = {
-    direct: {
-      color: '#10B981',
-      label: 'Direct Influence'
-    },
-    indirect: {
-      color: '#3B82F6',
-      label: 'Indirect Influence'
-    },
-    feedback: {
-      color: '#8B5CF6',
-      label: 'Feedback Loop'
+  useEffect(() => {
+    const token = sessionStorage.getItem('token');
+    setIsLoggedIn(!!token);
+    fetchPhases();
+  }, []);
+
+  useEffect(() => {
+    if (selectedPhase) {
+      fetchMatrixData();
+    }
+  }, [selectedPhase]);
+
+  const fetchPhases = async () => {
+    try {
+      const response = await axiosInstance.get('/phases');
+      setPhases(response.data);
+    } catch (error) {
+      console.error('Failed to fetch phases:', error);
+      setError('Failed to fetch phases');
     }
   };
 
-  const Arrow = ({ startPhase, endPhase, type }) => {
-    const startX = (startPhase - 1) * 160 + 80;
-    const endX = (endPhase - 1) * 160 + 80;
-    const isBackward = endPhase < startPhase;
-    
-    // Calculate path based on arrow type and direction
-    let path;
-    if (type === 'feedback') {
-      // Higher arc for feedback loops
-      path = `
-        M ${startX} 0
-        Q ${(startX + endX) / 2} -60,
-          ${endX} 0
-      `;
-    } else if (type === 'direct') {
-      // Gentle curve for direct connections
-      path = `
-        M ${startX} ${isBackward ? -20 : 20}
-        Q ${(startX + endX) / 2} ${isBackward ? -40 : 40},
-          ${endX} ${isBackward ? -20 : 20}
-      `;
-    } else {
-      // Wider curve for indirect connections
-      path = `
-        M ${startX} ${isBackward ? -10 : 10}
-        Q ${(startX + endX) / 2} ${isBackward ? -80 : 80},
-          ${endX} ${isBackward ? -10 : 10}
-      `;
+  const fetchMatrixData = async () => {
+    setLoading(true);
+    try {
+      const response = await getPhaseMatrix(selectedPhase);
+      setMatrixData(response);
+      setError(null);
+    } catch (error) {
+      setError('Failed to fetch matrix data');
+      console.error('Error:', error);
     }
+    setLoading(false);
+  };
 
-    return (
-      <g 
-        className="transition-all duration-200"
-        onMouseEnter={() => setHoveredConnection(`${startPhase}-${endPhase}-${type}`)}
-        onMouseLeave={() => setHoveredConnection(null)}
-      >
-        <path
-          d={path}
-          stroke={connectionTypes[type].color}
-          strokeWidth={hoveredConnection === `${startPhase}-${endPhase}-${type}` ? 2.5 : 2}
-          fill="none"
-          className="transition-all duration-200"
-          markerEnd={`url(#${type}-arrow)`}
-        />
-      </g>
-    );
+  const handleEdit = (category) => {
+    setEditingCategory(category);
+    setIsEditing(true);
+  };
+
+  const handleDelete = async (categoryId) => {
+    if (!window.confirm('Are you sure you want to delete this item?')) return;
+    
+    try {
+      await deleteMatrixCategory(categoryId);
+      fetchMatrixData();
+    } catch (error) {
+      setError('Failed to delete category');
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      if (editingCategory.id) {
+        await updateMatrixCategory(editingCategory.id, editingCategory);
+      } else {
+        await createMatrixCategory({
+          ...editingCategory,
+          phase_id: selectedPhase
+        });
+      }
+      setIsEditing(false);
+      setEditingCategory(null);
+      fetchMatrixData();
+    } catch (error) {
+      setError('Failed to save category');
+    }
+  };
+
+  const handleAdd = (categoryType) => {
+    setEditingCategory({
+      category_type: categoryType,
+      title: '',
+      description: '',
+      detail_text: ''
+    });
+    setIsEditing(true);
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-8">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800">Factory Planning Interface Matrix</h2>
-        <p className="text-gray-600">Phase {selectedPhase}: {phases[selectedPhase - 1].name}</p>
-      </div>
+    <div className="min-h-screen bg-white p-8">
+      {error && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-4">
+          {error}
+        </div>
+      )}
 
-      <div className="flex gap-6 mb-8">
-        {Object.entries(connectionTypes).map(([type, { color, label }]) => (
-          <div key={type} className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-            <span className="text-sm font-medium">{label}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="relative h-[300px] mb-12">
-        <svg className="w-full h-full" style={{ overflow: 'visible' }}>
-          <defs>
-            {Object.entries(connectionTypes).map(([type, { color }]) => (
-              <marker
-                key={type}
-                id={`${type}-arrow`}
-                viewBox="0 0 10 10"
-                refX="9"
-                refY="5"
-                markerWidth="6"
-                markerHeight="6"
-                orient="auto"
+      <div className="flex">
+        {/* Left Side Navigation */}
+        <div className="w-72 pr-8">
+          <div className="space-y-3">
+            {phases.map(phase => (
+              <button
+                key={phase.id}
+                onClick={() => setSelectedPhase(phase.id)}
+                className={`w-full text-left p-4 rounded-lg transition-all duration-200 ${
+                  selectedPhase === phase.id
+                    ? 'bg-blue-500 text-white shadow-lg'
+                    : 'bg-gray-50 hover:bg-blue-50'
+                }`}
               >
-                <path d="M 0 0 L 10 5 L 0 10 z" fill={color} />
-              </marker>
+                <span className="block font-medium">
+                  {phase.title}
+                </span>
+              </button>
             ))}
-          </defs>
+          </div>
+        </div>
 
-          {/* Example connections for Phase 4 */}
-          <Arrow startPhase={4} endPhase={3} type="feedback" />
-          <Arrow startPhase={4} endPhase={5} type="direct" />
-          <Arrow startPhase={4} endPhase={6} type="indirect" />
-          <Arrow startPhase={4} endPhase={7} type="indirect" />
-        </svg>
-
-        <div className="absolute top-1/2 w-full flex justify-between transform -translate-y-1/2">
-          {phases.map(phase => (
-            <div
-              key={phase.id}
-              onClick={() => setSelectedPhase(phase.id)}
-              className={`
-                w-32 p-4 rounded-xl cursor-pointer transition-all duration-300
-                ${selectedPhase === phase.id 
-                  ? 'bg-emerald-500 text-white shadow-lg scale-105'
-                  : 'bg-gray-50 hover:bg-emerald-50'
-                }
-              `}
-            >
-              <div className="text-center">
-                <div className="font-semibold">Phase {phase.id}</div>
-                <div className="text-sm mt-1">{phase.name}</div>
-              </div>
+        {/* Matrix Content */}
+        <div className="flex-1">
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
-          ))}
+          ) : (
+            <div className="space-y-6">
+              {fixedCategories.map(category => (
+                <MatrixRow
+                  key={category.type}
+                  leftTitle={category.title}
+                  data={matrixData?.categories?.[category.type]?.[0]}
+                  isAdmin={isLoggedIn}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onAdd={() => handleAdd(category.type)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-8">
-        <InfoPanel title="Outputs" icon={ArrowUpRight}>
-          <div className="space-y-3">
-            <OutputItem title="Product Requirements" desc="Key deliverable for next phase" />
-            <OutputItem title="Design Specifications" desc="Key deliverable for next phase" />
-            <OutputItem title="Resource Plans" desc="Key deliverable for next phase" />
+      {/* Edit Modal */}
+      {isEditing && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg w-full max-w-lg">
+            <h3 className="text-lg font-semibold mb-4">
+              {editingCategory.id ? 'Edit Category' : 'Add New Category'}
+            </h3>
+            <div className="space-y-4">
+              <input
+                type="text"
+                placeholder="Title"
+                className="w-full p-2 border rounded"
+                value={editingCategory.title || ''}
+                onChange={e => setEditingCategory({
+                  ...editingCategory,
+                  title: e.target.value
+                })}
+              />
+              <textarea
+                placeholder="Description"
+                className="w-full p-2 border rounded"
+                value={editingCategory.description || ''}
+                onChange={e => setEditingCategory({
+                  ...editingCategory,
+                  description: e.target.value
+                })}
+              />
+              <textarea
+                placeholder="Detailed Text"
+                className="w-full p-2 border rounded"
+                value={editingCategory.detail_text || ''}
+                onChange={e => setEditingCategory({
+                  ...editingCategory,
+                  detail_text: e.target.value
+                })}
+              />
+              <div className="flex justify-end space-x-4">
+                <button
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditingCategory(null);
+                  }}
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
           </div>
-        </InfoPanel>
-
-        <InfoPanel title="Outcomes" icon={Database}>
-          <div className="space-y-3">
-            <OutcomeItem title="Technical Documentation" />
-            <OutcomeItem title="Process Maps" />
-            <OutcomeItem title="Quality Metrics" />
-          </div>
-        </InfoPanel>
-
-        <InfoPanel title="Influences" icon={GitBranch}>
-          <div className="space-y-3">
-            <InfluenceItem phase={5} type="Direct" />
-            <InfluenceItem phase={6} type="Indirect" />
-            <InfluenceItem phase={7} type="Indirect" />
-          </div>
-        </InfoPanel>
-      </div>
+        </div>
+      )}
     </div>
   );
 };
 
-const InfoPanel = ({ title, icon: Icon, children }) => (
-  <div className="bg-gray-50 rounded-lg p-6">
-    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-      <Icon className="text-emerald-600" />
-      {title}
-    </h3>
-    {children}
-  </div>
-);
+const MatrixRow = ({ leftTitle, data, isAdmin, onEdit, onDelete, onAdd }) => (
+  <div className="flex items-start group">
+    <div className="relative w-64 mr-8">
+      <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+        <h3 className="font-medium text-gray-900">{leftTitle}</h3>
+      </div>
+      <div className="absolute right-[-24px] top-1/2 transform -translate-y-1/2 flex items-center">
+        <div className="w-4 h-[2px] bg-gray-300"></div>
+        <ArrowRight className="w-4 h-4 text-gray-300" />
+      </div>
+    </div>
 
-const OutputItem = ({ title, desc }) => (
-  <div className="p-3 bg-emerald-50 rounded-lg text-emerald-700">
-    <div className="font-medium">{title}</div>
-    <div className="text-sm mt-1">{desc}</div>
-  </div>
-);
-
-const OutcomeItem = ({ title }) => (
-  <div className="p-3 bg-white rounded-lg border border-gray-100">
-    <div className="flex items-center gap-2">
-      <Database className="w-4 h-4 text-emerald-600" />
-      <span className="font-medium">{title}</span>
+    <div className="flex-1 bg-white border border-gray-200 rounded-lg p-4 shadow-sm relative">
+      {isAdmin && (
+        <div className="absolute top-2 right-2 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          {data ? (
+            <>
+              <button
+                onClick={() => onEdit(data)}
+                className="p-1 text-gray-600 hover:text-blue-600"
+              >
+                <Edit2 size={16} />
+              </button>
+              <button
+                onClick={() => onDelete(data.id)}
+                className="p-1 text-gray-600 hover:text-red-600"
+              >
+                <Trash2 size={16} />
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={onAdd}
+              className="p-1 text-gray-600 hover:text-green-600"
+            >
+              <Plus size={16} />
+            </button>
+          )}
+        </div>
+      )}
+      
+      {data ? (
+        <div>
+          <h3 className="font-medium text-gray-900 mb-2">{data.title}</h3>
+          <p className="text-gray-600 text-sm">{data.detail_text}</p>
+        </div>
+      ) : (
+        <div className="flex items-center text-gray-500">
+          <AlertCircle className="w-5 h-5 mr-2" />
+          <span>No data available</span>
+        </div>
+      )}
     </div>
   </div>
 );
 
-const InfluenceItem = ({ phase, type }) => (
-  <div className="p-3 bg-white rounded-lg border border-gray-100">
-    <div className="flex justify-between items-center">
-      <span className="font-medium">Phase {phase}</span>
-      <span className={`px-2 py-1 rounded text-sm ${
-        type === 'Direct' 
-          ? 'bg-emerald-100 text-emerald-700' 
-          : 'bg-blue-100 text-blue-700'
-      }`}>
-        {type}
-      </span>
-    </div>
-  </div>
-);
-
-export default InterfaceMatrix;
+export default MatrixComponent;
