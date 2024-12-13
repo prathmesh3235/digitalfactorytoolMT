@@ -1,101 +1,233 @@
-import React, { useState, useEffect } from 'react';
-import axios from '../utils/axiosInstance';
+import React, { useState, useEffect } from "react";
+import axios from "../utils/axiosInstance";
 
-// Icons as simple SVG components
 const EditIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
   </svg>
 );
 
 const DeleteIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M3 6h18"/>
-    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M3 6h18" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
   </svg>
 );
 
-const Modal = ({ children, onClose }) => (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg p-6 max-w-md w-full m-4">
-      <div className="relative">
-        {children}
-      </div>
+const StarRating = ({ rating, onRate, disabled }) => {
+  const [hover, setHover] = useState(0);
+
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          onClick={() => !disabled && onRate(star)}
+          onMouseEnter={() => !disabled && setHover(star)}
+          onMouseLeave={() => !disabled && setHover(0)}
+          disabled={disabled}
+          className={`text-xl transition-colors ${
+            disabled ? "cursor-not-allowed" : "cursor-pointer"
+          } ${(hover || rating) >= star ? "text-yellow-400" : "text-gray-300"}`}
+        >
+          ★
+        </button>
+      ))}
     </div>
+  );
+};
+
+const DisplayStars = ({ rating }) => (
+  <div className="flex gap-1">
+    {[1, 2, 3, 4, 5].map((star) => (
+      <span
+        key={star}
+        className={`text-xl ${
+          star <= rating ? "text-yellow-400" : "text-gray-300"
+        }`}
+      >
+        ★
+      </span>
+    ))}
   </div>
 );
 
-const AIPotentialBlock = ({ potential, isEditing, onEdit, onDelete, expanded, onToggle }) => {
-  const [rating, setRating] = useState(potential.rating || 0);
-  const token = typeof window !== 'undefined' ? sessionStorage.getItem('token') : null;
+const Modal = ({ isOpen, onClose, children }) => {
+  if (!isOpen) return null;
 
-  const handleRatingChange = async (newRating) => {
-    setRating(newRating);
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md m-4 relative">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl font-bold"
+        >
+          ×
+        </button>
+        {children}
+      </div>
+    </div>
+  );
+};
+
+const AIPotentialsSection = ({ phaseId, isEditing }) => {
+  const [potentials, setPotentials] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingPotential, setEditingPotential] = useState(null);
+  const [notification, setNotification] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    checkAuthStatus();
+    fetchPotentials();
+  }, [phaseId]);
+
+  const checkAuthStatus = () => {
+    const adminStatus = sessionStorage.getItem("isAdmin") === "true";
+    setIsAdmin(adminStatus);
+  };
+
+  const fetchPotentials = async () => {
     try {
-      await axios.post(
-        `/potential/${potential.id}/rating`,
-        { rating: newRating },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-    } catch (err) {
-      console.error("Failed to save rating:", err);
+      const response = await axios.get(`/potential/${phaseId}`);
+      setPotentials(response.data);
+    } catch (error) {
+      showNotification("Failed to load potentials", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
-  return (
-    <div 
-      className={`
-        relative w-full bg-white rounded-lg shadow-md border-l-4 border-[#00AB8E] 
-        hover:shadow-lg transition-all duration-300 cursor-pointer
-        ${expanded ? 'ring-2 ring-[#00AB8E] ring-opacity-50' : ''}
-      `}
-      onClick={onToggle}
-    >
+  const showNotification = (message, type = "success") => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!isAdmin || !isEditing) return;
+
+    const formData = {
+      title: e.target.title.value,
+      category: e.target.category.value,
+      description: e.target.description.value,
+      phaseId,
+    };
+
+    try {
+      if (editingPotential?.id) {
+        await axios.patch(`/potential/${editingPotential.id}`, formData);
+      } else {
+        await axios.post("/potential", formData);
+      }
+      await fetchPotentials();
+      setIsModalOpen(false);
+      setEditingPotential(null);
+      showNotification(
+        editingPotential ? "Updated successfully" : "Added successfully"
+      );
+    } catch (error) {
+      showNotification(
+        error.response?.data?.message || "Failed to save changes",
+        "error"
+      );
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (
+      !isAdmin ||
+      !isEditing ||
+      !window.confirm("Are you sure you want to delete this potential?")
+    )
+      return;
+
+    try {
+      await axios.delete(`/potential/${id}`);
+      await fetchPotentials();
+      showNotification("Deleted successfully");
+    } catch (error) {
+      showNotification("Failed to delete", "error");
+    }
+  };
+
+  const handleRatingChange = async (potentialId, newRating) => {
+    if (!isAdmin || !isEditing) return;
+
+    try {
+      await axios.patch(`/potential/${potentialId}/rating`, {
+        rating: newRating,
+      });
+      await fetchPotentials();
+      showNotification("Rating updated successfully");
+    } catch (error) {
+      showNotification("Failed to update rating", "error");
+    }
+  };
+
+  const PotentialCard = ({ potential }) => (
+    <div className="bg-white rounded-lg shadow-md border-l-4 border-teal-500 hover:shadow-lg transition-all duration-200">
       <div className="p-4">
         <div className="flex justify-between items-start">
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-800 mb-2">{potential.title}</h3>
-            <p className={`text-sm text-gray-600 ${expanded ? '' : 'line-clamp-2'}`}>
-              {potential.description}
-            </p>
-            <div className="mt-2 flex items-center text-sm text-gray-600">
-              <span className="font-medium">Rating:</span>
-              {isEditing ? (
-                <select
-                  value={rating}
-                  onChange={(e) => handleRatingChange(parseInt(e.target.value))}
-                  className="ml-2 border p-1 rounded focus:outline-none focus:ring-2 focus:ring-[#00AB8E]"
-                >
-                  <option value={0}>No Rating</option>
-                  <option value={1}>1</option>
-                  <option value={2}>2</option>
-                  <option value={3}>3</option>
-                  <option value={4}>4</option>
-                  <option value={5}>5</option>
-                </select>
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="font-semibold text-gray-800">{potential.title}</h3>
+              <span className="text-sm text-teal-600 bg-teal-50 px-2 py-1 rounded-full">
+                {potential.category}
+              </span>
+            </div>
+            <p className="text-gray-600">{potential.description}</p>
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-sm text-gray-600">Rating:</span>
+              {isAdmin && isEditing ? (
+                <StarRating
+                  rating={potential.rating}
+                  onRate={(rating) => handleRatingChange(potential.id, rating)}
+                  disabled={!isEditing}
+                />
               ) : (
-                <span className="ml-2">{rating > 0 ? rating : 'N/A'}</span>
+                <DisplayStars rating={potential.rating} />
               )}
             </div>
           </div>
-          {isEditing && (
+          {isAdmin && isEditing && (
             <div className="flex gap-2 ml-4">
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(potential);
+                onClick={() => {
+                  setEditingPotential(potential);
+                  setIsModalOpen(true);
                 }}
-                className="p-2 hover:bg-gray-100 rounded-full text-[#00AB8E] transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-full text-teal-600"
+                title="Edit"
               >
                 <EditIcon />
               </button>
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(potential.id);
-                }}
-                className="p-2 hover:bg-gray-100 rounded-full text-red-500 transition-colors"
+                onClick={() => handleDelete(potential.id)}
+                className="p-2 hover:bg-gray-100 rounded-full text-red-500"
+                title="Delete"
               >
                 <DeleteIcon />
               </button>
@@ -105,155 +237,76 @@ const AIPotentialBlock = ({ potential, isEditing, onEdit, onDelete, expanded, on
       </div>
     </div>
   );
-};
-
-const AIPotentialsSection = ({ phaseId, isEditing }) => {
-  const [potentials, setPotentials] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [editingPotential, setEditingPotential] = useState(null);
-  const [expandedId, setExpandedId] = useState(null);
-  const [notification, setNotification] = useState(null);
-
-  const isAdmin = typeof window !== 'undefined' && sessionStorage.getItem('isAdmin') === 'true';
-
-  useEffect(() => {
-    fetchPotentials();
-  }, [phaseId]);
-
-  const fetchPotentials = async () => {
-    try {
-      const response = await axios.get(`/potential/${phaseId}`);
-      setPotentials(response.data);
-    } catch (err) {
-      setError('Failed to load AI potentials');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const showNotification = (message, type = 'success') => {
-    setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formData = {
-      category: e.target.category.value,
-      title: e.target.title.value,
-      description: e.target.description.value,
-      phaseId
-    };
-
-    try {
-      if (editingPotential?.id) {
-        await axios.patch(`/potential/${editingPotential.id}`, formData);
-      } else {
-        await axios.post('/potential', formData);
-      }
-      await fetchPotentials();
-      setEditingPotential(null);
-      showNotification('Changes saved successfully');
-    } catch (err) {
-      showNotification('Failed to save changes', 'error');
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this potential?')) {
-      try {
-        await axios.delete(`/potential/${id}`);
-        await fetchPotentials();
-        showNotification('Potential deleted successfully');
-      } catch (err) {
-        showNotification('Failed to delete potential', 'error');
-      }
-    }
-  };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-48">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#00AB8E] border-t-transparent"></div>
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-teal-500 border-t-transparent"></div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      {/* Header */}
-      <div className="mb-6 flex justify-between items-center">
+    <div className="p-6">
+      {notification && (
+        <div
+          className={`
+          fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transition-opacity duration-300
+          ${
+            notification.type === "error"
+              ? "bg-red-100 text-red-700"
+              : "bg-green-100 text-green-700"
+          }
+        `}
+        >
+          {notification.message}
+        </div>
+      )}
+
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-[#00AB8E] text-xl font-semibold mb-2">AI Potentials</h2>
-          <p className="text-gray-600 text-sm">
-            Advanced AI capabilities for optimizing factory planning processes
+          <h2 className="text-2xl font-semibold text-teal-700">
+            AI Potentials
+          </h2>
+          <p className="text-gray-600">
+            Advanced AI capabilities for optimizing factory planning
           </p>
         </div>
-        {isEditing && isAdmin && (
+        {isAdmin && isEditing && (
           <button
-            onClick={() => setEditingPotential({})}
-            className="bg-[#00AB8E] text-white px-4 py-2 rounded-lg hover:bg-[#009579] transition-colors"
+            onClick={() => {
+              setEditingPotential(null);
+              setIsModalOpen(true);
+            }}
+            className="bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 
+              transition-colors flex items-center gap-2"
           >
             Add Potential
           </button>
         )}
       </div>
 
-      {/* Notification */}
-      {notification && (
-        <div className={`
-          p-4 mb-4 rounded-lg transition-all duration-300
-          ${notification.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}
-        `}>
-          {notification.message}
-        </div>
-      )}
-
-      {/* Potentials Grid */}
-      <div className="relative">
-        <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-[#00AB8E] bg-opacity-20"></div>
-        
-        <div className="space-y-8">
-          {potentials.map((potential, index) => (
-            <div key={potential.id || index} className="relative grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-              <div className="absolute left-1/2 top-1/2 w-3 h-3 bg-[#00AB8E] rounded-full transform -translate-x-1/2 -translate-y-1/2 z-10"></div>
-              
-              <div className={`text-right pr-8 ${index % 2 === 1 ? 'md:col-start-2' : ''}`}>
-                <h3 className="font-medium text-[#00AB8E]">{potential.category}</h3>
-              </div>
-
-              <div className={`${index % 2 === 1 ? 'md:col-start-1 md:row-start-1' : ''}`}>
-                <AIPotentialBlock
-                  potential={potential}
-                  // Allow editing (including rating) only if the component is in editing mode AND user is admin
-                  isEditing={isEditing && isAdmin}
-                  onEdit={setEditingPotential}
-                  onDelete={handleDelete}
-                  expanded={expandedId === potential.id}
-                  onToggle={() => setExpandedId(expandedId === potential.id ? null : potential.id)}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="space-y-4">
+        {potentials.map((potential) => (
+          <PotentialCard key={potential.id} potential={potential} />
+        ))}
       </div>
 
-      {/* Edit Modal */}
-      {editingPotential && (
-        <Modal onClose={() => setEditingPotential(null)}>
+      {isAdmin && isEditing && isModalOpen && (
+        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <h2 className="text-lg font-semibold mb-4">
-              {editingPotential.id ? 'Edit' : 'Add'} AI Potential
+            <h2 className="text-xl font-semibold mb-4">
+              {editingPotential ? "Edit Potential" : "Add New Potential"}
             </h2>
-            
+
             <div>
               <label className="block text-sm font-medium mb-1">Category</label>
               <input
                 type="text"
                 name="category"
-                defaultValue={editingPotential.category}
-                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-[#00AB8E] focus:outline-none"
+                defaultValue={editingPotential?.category}
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-teal-500 
+                  focus:border-teal-500 outline-none"
                 required
               />
             </div>
@@ -263,18 +316,22 @@ const AIPotentialsSection = ({ phaseId, isEditing }) => {
               <input
                 type="text"
                 name="title"
-                defaultValue={editingPotential.title}
-                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-[#00AB8E] focus:outline-none"
+                defaultValue={editingPotential?.title}
+                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-teal-500 
+                  focus:border-teal-500 outline-none"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Description</label>
+              <label className="block text-sm font-medium mb-1">
+                Description
+              </label>
               <textarea
                 name="description"
-                defaultValue={editingPotential.description}
-                className="w-full p-2 border rounded-lg h-24 focus:ring-2 focus:ring-[#00AB8E] focus:outline-none"
+                defaultValue={editingPotential?.description}
+                className="w-full p-2 border rounded-lg h-24 focus:ring-2 focus:ring-teal-500 
+                  focus:border-teal-500 outline-none"
                 required
               />
             </div>
@@ -282,14 +339,15 @@ const AIPotentialsSection = ({ phaseId, isEditing }) => {
             <div className="flex justify-end gap-2 pt-4">
               <button
                 type="button"
-                onClick={() => setEditingPotential(null)}
+                onClick={() => setIsModalOpen(false)}
                 className="px-4 py-2 border rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-[#00AB8E] text-white rounded-lg hover:bg-[#009579] transition-colors"
+                className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 
+                  transition-colors"
               >
                 Save
               </button>

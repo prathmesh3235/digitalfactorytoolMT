@@ -8,24 +8,13 @@ import PhaseProfile from "./profiletab";
 import InterfaceMatrix from "./interfaceMatrix";
 
 export default function PhasesComponent() {
-  // Existing states
   const [phases, setPhases] = useState([]);
   const [activePhase, setActivePhase] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  // New state for active tab
   const [activeTab, setActiveTab] = useState('factory');
-
-  const formatPhaseDescription = (text) => {
-    const words = text.split(" ");
-    if (words.length <= 2) return text;
-    const midPoint = Math.ceil(words.length / 2);
-    const firstLine = words.slice(0, midPoint).join(" ");
-    const secondLine = words.slice(midPoint).join(" ");
-    return [firstLine, secondLine];
-  };
 
   useEffect(() => {
     const fetchPhases = async () => {
@@ -50,6 +39,15 @@ export default function PhasesComponent() {
       setIsLoggedIn(true);
     }
   }, []);
+
+  const formatPhaseDescription = (text) => {
+    const words = text.split(" ");
+    if (words.length <= 2) return text;
+    const midPoint = Math.ceil(words.length / 2);
+    const firstLine = words.slice(0, midPoint).join(" ");
+    const secondLine = words.slice(midPoint).join(" ");
+    return [firstLine, secondLine];
+  };
 
   const handlePhaseClick = (phase) => {
     setActivePhase(phase);
@@ -90,7 +88,6 @@ export default function PhasesComponent() {
       case 'ai':
         return (
           <>
-            {/* Show phases chevron in AI tab too */}
             <div className="w-full overflow-x-auto mb-6 pb-2">
               <div className="flex min-w-max px-4">
                 {phases.map((phase, index) => {
@@ -111,7 +108,6 @@ export default function PhasesComponent() {
                         filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))",
                       }}
                     >
-                      {/* Phase button content remains the same */}
                       <div className="text-center px-3 flex flex-col items-center justify-center w-full py-2">
                         <div className="font-medium text-sm mb-1">{phase.name}</div>
                         {isMultiline ? (
@@ -135,12 +131,10 @@ export default function PhasesComponent() {
               </div>
             </div>
             
-            {/* AI Potentials content */}
             <div className="w-full">
               <AIPotentialsSection
                 phaseId={activePhase?.id}
                 isEditing={isEditing}
-                token={sessionStorage.getItem("token")}
                 fullWidth={true}
               />
             </div>
@@ -156,7 +150,6 @@ export default function PhasesComponent() {
               <AIPotentialsSection
                 phaseId={activePhase?.id}
                 isEditing={isEditing}
-                token={sessionStorage.getItem("token")}
               />
             </div>
           </div>
@@ -166,7 +159,6 @@ export default function PhasesComponent() {
 
   return (
     <div className="relative flex flex-col items-center p-4 max-w-[1400px] mx-auto">
-      {/* Loading and Success Overlays */}
       {loading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center text-white text-2xl z-50">
           Loading...
@@ -180,7 +172,6 @@ export default function PhasesComponent() {
         </div>
       )}
 
-      {/* Action Buttons */}
       <div className="flex justify-center gap-3 my-4 w-full">
         {isLoggedIn && (
           !isEditing ? (
@@ -208,7 +199,6 @@ export default function PhasesComponent() {
         )}
       </div>
 
-      {/* Header Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full mb-4">
         {[
           { id: 'factory', label: 'Factory Planning' },
@@ -228,7 +218,6 @@ export default function PhasesComponent() {
         ))}
       </div>
 
-      {/* Phase Chevrons - Only show in factory tab */}
       {activeTab === 'factory' && (
         <div className="w-full overflow-x-auto mb-6 pb-2">
           <div className="flex min-w-max px-4">
@@ -295,7 +284,6 @@ export default function PhasesComponent() {
         </div>
       )}
 
-      {/* Dynamic Content Area */}
       {activePhase && renderContent()}
     </div>
   );
