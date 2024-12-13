@@ -6,6 +6,7 @@ import Link from "next/link";
 import AIPotentialsSection from "./AIPotentialsSection";
 import PhaseProfile from "./profiletab";
 import InterfaceMatrix from "./interfaceMatrix";
+import TopRatedPotentials from "./TopRatedPotentials";  
 
 export default function PhasesComponent() {
   const [phases, setPhases] = useState([]);
@@ -15,6 +16,9 @@ export default function PhasesComponent() {
   const [success, setSuccess] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState('factory');
+
+  // New state to handle showing the top-rated modal
+  const [showTopRated, setShowTopRated] = useState(false);
 
   useEffect(() => {
     const fetchPhases = async () => {
@@ -27,13 +31,15 @@ export default function PhasesComponent() {
           phaseNo: phase.phaseNo,
         }));
         setPhases(formattedPhases);
-        setActivePhase(formattedPhases[0]);
+        setActivePhase(formattedPhases[0]);  // Default to the first phase
       } catch (error) {
         console.error("Failed to fetch phases", error);
       }
     };
 
     fetchPhases();
+
+    // Check for token to set logged-in status
     const token = sessionStorage.getItem("token");
     if (token) {
       setIsLoggedIn(true);
@@ -55,6 +61,7 @@ export default function PhasesComponent() {
 
   const handleEditClick = () => setIsEditing(true);
   const handleSaveClick = () => setIsEditing(false);
+
   const handlePhaseChange = (index, key, value) => {
     const newPhases = [...phases];
     newPhases[index][key] = value;
@@ -83,11 +90,13 @@ export default function PhasesComponent() {
     }
   };
 
+  // Render the main content based on the selected tab
   const renderContent = () => {
     switch (activeTab) {
       case 'ai':
         return (
           <>
+            {/* Horizontal Phase Navigation */}
             <div className="w-full overflow-x-auto mb-6 pb-2">
               <div className="flex min-w-max px-4">
                 {phases.map((phase, index) => {
@@ -131,6 +140,7 @@ export default function PhasesComponent() {
               </div>
             </div>
             
+            {/* AI Potentials Section */}
             <div className="w-full">
               <AIPotentialsSection
                 phaseId={activePhase?.id}
@@ -143,6 +153,7 @@ export default function PhasesComponent() {
       case 'matrix':
         return <InterfaceMatrix activePhase={activePhase} phases={phases} />;
       default:
+        // 'factory' or any other fallback
         return (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
             <PhaseProfile phaseId={activePhase?.id} isEditing={isEditing} />
@@ -172,33 +183,51 @@ export default function PhasesComponent() {
         </div>
       )}
 
+      {/* Edit / Add / Top Rated Buttons */}
       <div className="flex justify-center gap-3 my-4 w-full">
-        {isLoggedIn && (
-          !isEditing ? (
-            <>
-              <button
-                onClick={handleEditClick}
-                className="bg-[#00AB8E] text-white px-4 py-2 rounded hover:bg-[#009579] transition-all"
-              >
-                Edit Information
-              </button>
-              <Link href="/cmsForm">
-                <button className="bg-[#B5BD00] text-white px-4 py-2 rounded hover:brightness-95 transition-all">
-                  Add Information
-                </button>
-              </Link>
-            </>
-          ) : (
+        {isLoggedIn && !isEditing && (
+          <>
             <button
-              onClick={handleSaveClick}
+              onClick={handleEditClick}
               className="bg-[#00AB8E] text-white px-4 py-2 rounded hover:bg-[#009579] transition-all"
             >
-              Save Information
+              Edit Information
             </button>
-          )
+            <Link href="/cmsForm">
+              <button className="bg-[#B5BD00] text-white px-4 py-2 rounded hover:brightness-95 transition-all">
+                Add Information
+              </button>
+            </Link>
+            {/* Visible to all users; also show if logged in but not editing */}
+            <button
+              onClick={() => setShowTopRated(true)}
+              className="bg-[#00AB8E] text-white px-4 py-2 rounded hover:bg-[#009579] transition-all"
+            >
+              Top Rated AI Potentials
+            </button>
+          </>
+        )}
+
+        {isLoggedIn && isEditing && (
+          <button
+            onClick={handleSaveClick}
+            className="bg-[#00AB8E] text-white px-4 py-2 rounded hover:bg-[#009579] transition-all"
+          >
+            Save Information
+          </button>
+        )}
+
+        {!isLoggedIn && (
+          <button
+            onClick={() => setShowTopRated(true)}
+            className="bg-[#00AB8E] text-white px-4 py-2 rounded hover:bg-[#009579] transition-all"
+          >
+            Top Rated AI Potentials
+          </button>
         )}
       </div>
 
+      {/* Tabs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full mb-4">
         {[
           { id: 'factory', label: 'Factory Planning' },
@@ -284,7 +313,13 @@ export default function PhasesComponent() {
         </div>
       )}
 
+      {/* Render main content based on activeTab */}
       {activePhase && renderContent()}
+
+      {/* Show Top Rated Potentials modal if triggered */}
+      {showTopRated && (
+        <TopRatedPotentials onClose={() => setShowTopRated(false)} />
+      )}
     </div>
   );
 }
