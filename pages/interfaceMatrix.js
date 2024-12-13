@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Edit2, Trash2, Plus, AlertCircle } from 'lucide-react';
+import { ArrowRight, Edit2, Trash2, Plus, AlertCircle, Check } from 'lucide-react';
 import axiosInstance from '../utils/axiosInstance';
 import { getPhaseMatrix, createMatrixCategory, updateMatrixCategory, deleteMatrixCategory } from '../utils/matrix';
 
@@ -100,7 +100,20 @@ const MatrixComponent = () => {
     setIsEditing(true);
   };
 
+  const handleMiddleTitleUpdate = async (categoryType, newTitle) => {
+    try {
+      await axiosInstance.patch(`/matrix/category-titles/${selectedPhase}`, {
+        categoryType,
+        title: newTitle
+      });
+      fetchMatrixData();
+    } catch (error) {
+      setError('Failed to update category title');
+    }
+  };
+
   return (
+    
     <div className="min-h-screen bg-white p-8">
       {error && (
         <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-4">
@@ -140,14 +153,16 @@ const MatrixComponent = () => {
             <div className="space-y-6">
               {fixedCategories.map(category => (
                 <MatrixRow
-                  key={category.type}
-                  leftTitle={category.title}
-                  data={matrixData?.categories?.[category.type]?.[0]}
-                  isAdmin={isLoggedIn}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onAdd={() => handleAdd(category.type)}
-                />
+                key={category.type}
+                leftTitle={category.title}
+                data={matrixData?.categories?.[category.type]?.[0]}
+                categoryType={category.type}
+                isAdmin={isLoggedIn}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onAdd={() => handleAdd(category.type)}
+                onMiddleTitleUpdate={handleMiddleTitleUpdate}
+              />
               ))}
             </div>
           )}
@@ -212,63 +227,114 @@ const MatrixComponent = () => {
         </div>
       )}
     </div>
+    
   );
 };
 
-const MatrixRow = ({ leftTitle, data, isAdmin, onEdit, onDelete, onAdd }) => (
-  <div className="flex items-start group">
-    <div className="relative w-64 mr-8">
-      <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-        <h3 className="font-medium text-gray-900">{leftTitle}</h3>
-      </div>
-      <div className="absolute right-[-24px] top-1/2 transform -translate-y-1/2 flex items-center">
-        <div className="w-4 h-[2px] bg-gray-300"></div>
-        <ArrowRight className="w-4 h-4 text-gray-300" />
-      </div>
-    </div>
+const MatrixRow = ({ 
+  leftTitle, 
+  data, 
+  categoryType, 
+  isAdmin, 
+  onEdit, 
+  onDelete, 
+  onAdd 
+}) => {
+  const [isEditingMiddle, setIsEditingMiddle] = useState(false);
+  const [middleTitle, setMiddleTitle] = useState(leftTitle);
 
-    <div className="flex-1 bg-white border border-gray-200 rounded-lg p-4 shadow-sm relative">
-      {isAdmin && (
-        <div className="absolute top-2 right-2 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          {data ? (
-            <>
+  const handleMiddleSave = () => {
+    // We'll need to implement this functionality
+    console.log('Saving middle title:', middleTitle);
+    setIsEditingMiddle(false);
+  };
+
+  return (
+    <div className="flex items-start group">
+      {/* Middle Column */}
+      <div className="relative w-64 mr-8">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+          {isEditingMiddle && isAdmin ? (
+            <div className="flex items-center">
+              <input
+                type="text"
+                value={middleTitle}
+                onChange={(e) => setMiddleTitle(e.target.value)}
+                className="w-full p-1 border rounded"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') handleMiddleSave();
+                }}
+              />
               <button
-                onClick={() => onEdit(data)}
-                className="p-1 text-gray-600 hover:text-blue-600"
+                onClick={handleMiddleSave}
+                className="ml-2 text-green-600 hover:text-green-700"
               >
-                <Edit2 size={16} />
+                <Check size={16} />
               </button>
-              <button
-                onClick={() => onDelete(data.id)}
-                className="p-1 text-gray-600 hover:text-red-600"
-              >
-                <Trash2 size={16} />
-              </button>
-            </>
+            </div>
           ) : (
-            <button
-              onClick={onAdd}
-              className="p-1 text-gray-600 hover:text-green-600"
-            >
-              <Plus size={16} />
-            </button>
+            <div className="flex justify-between items-center">
+              <h3 className="font-medium text-gray-900">{middleTitle}</h3>
+              {isAdmin && (
+                <button
+                  onClick={() => setIsEditingMiddle(true)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Edit2 size={16} className="text-gray-600 hover:text-blue-600" />
+                </button>
+              )}
+            </div>
           )}
         </div>
-      )}
-      
-      {data ? (
-        <div>
-          <h3 className="font-medium text-gray-900 mb-2">{data.title}</h3>
-          <p className="text-gray-600 text-sm">{data.detail_text}</p>
+        <div className="absolute right-[-24px] top-1/2 transform -translate-y-1/2 flex items-center">
+          <div className="w-4 h-[2px] bg-gray-300"></div>
+          <ArrowRight className="w-4 h-4 text-gray-300" />
         </div>
-      ) : (
-        <div className="flex items-center text-gray-500">
-          <AlertCircle className="w-5 h-5 mr-2" />
-          <span>No data available</span>
-        </div>
-      )}
-    </div>
-  </div>
-);
+      </div>
 
+      {/* Right Content */}
+      <div className="flex-1 bg-white border border-gray-200 rounded-lg p-4 shadow-sm relative">
+        {isAdmin && (
+          <div className="absolute top-2 right-2 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            {data ? (
+              <>
+                <button
+                  onClick={() => onEdit(data)}
+                  className="p-1 text-gray-600 hover:text-blue-600"
+                >
+                  <Edit2 size={16} />
+                </button>
+                <button
+                  onClick={() => onDelete(data.id)}
+                  className="p-1 text-gray-600 hover:text-red-600"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={onAdd}
+                className="p-1 text-gray-600 hover:text-green-600"
+              >
+                <Plus size={16} />
+              </button>
+            )}
+          </div>
+        )}
+        
+        {data ? (
+          <div>
+            <h3 className="font-medium text-gray-900 mb-2">{data.title}</h3>
+            <p className="text-gray-600 text-sm">{data.detail_text}</p>
+          </div>
+        ) : (
+          <div className="flex items-center text-gray-500">
+            <AlertCircle className="w-5 h-5 mr-2" />
+            <span>No data available</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 export default MatrixComponent;
