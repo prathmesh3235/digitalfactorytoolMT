@@ -87,3 +87,48 @@
     @apply bg-[#F3F4F6] rounded-lg p-4 mb-4 border-l-4 border-[#00AB8E];
   }
 }
+
+.phase-navigation {
+  --chevron-width: 20px;
+  --chevron-color: #E5E7EB;
+}
+
+.phase-chevron {
+  position: relative;
+  overflow: hidden;
+}
+
+.phase-chevron::before,
+.phase-chevron::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--chevron-width);
+  background: var(--chevron-color);
+}
+
+.phase-chevron::before {
+  left: 0;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+.phase-chevron::after {
+  right: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 100% 50%);
+}
+
+.matrix-arrow {
+  position: relative;
+}
+
+.matrix-arrow::after {
+  content: '';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 6px solid transparent;
+  border-left: 10px solid #9CA3AF;
+  border-bottom: 6px solid transparent;
+}

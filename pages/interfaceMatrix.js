@@ -123,25 +123,33 @@ const MatrixComponent = () => {
 
       <div className="flex">
         {/* Left Side Navigation */}
+
+
         <div className="w-72 pr-8">
-          <div className="space-y-3">
-            {phases.map(phase => (
-              <button
-                key={phase.id}
-                onClick={() => setSelectedPhase(phase.id)}
-                className={`w-full text-left p-4 rounded-lg transition-all duration-200 ${
-                  selectedPhase === phase.id
-                    ? 'bg-blue-500 text-white shadow-lg'
-                    : 'bg-gray-50 hover:bg-blue-50'
-                }`}
-              >
-                <span className="block font-medium">
-                  {phase.title}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
+  <div className="space-y-3">
+    {phases.map(phase => (
+      <button
+        key={phase.id}
+        onClick={() => setSelectedPhase(phase.id)}
+        className={`w-full relative ${
+          selectedPhase === phase.id
+            ? 'bg-blue-500 text-white'
+            : 'bg-gray-50 hover:bg-blue-50 text-gray-700'
+        } transition-colors`}
+        style={{
+          clipPath: 'polygon(0 0, 95% 0, 100% 50%, 95% 100%, 0 100%)',
+          padding: '1rem 2rem',
+          minHeight: '3.5rem'
+        }}
+      >
+        <span className="block font-medium text-left">
+          {phase.title}
+        </span>
+      </button>
+    ))}
+  </div>
+</div>
+
 
         {/* Matrix Content */}
         <div className="flex-1">
@@ -250,10 +258,10 @@ const MatrixRow = ({
   };
 
   return (
-    <div className="flex items-start group">
-      {/* Middle Column */}
-      <div className="relative w-64 mr-8">
-        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+    <div className="flex items-start group min-h-[100px]"> {/* Added min-height */}
+      {/* Middle Column - Fixed width */}
+      <div className="relative w-80 flex-shrink-0 mr-8"> {/* Added flex-shrink-0 and fixed width */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm h-full">
           {isEditingMiddle && isAdmin ? (
             <div className="flex items-center">
               <input
@@ -286,14 +294,19 @@ const MatrixRow = ({
             </div>
           )}
         </div>
-        <div className="absolute right-[-24px] top-1/2 transform -translate-y-1/2 flex items-center">
-          <div className="w-4 h-[2px] bg-gray-300"></div>
-          <ArrowRight className="w-4 h-4 text-gray-300" />
+        <div className="absolute right-[-32px] top-1/2 transform -translate-y-1/2 w-[32px] flex items-center">
+          <div className="w-full h-[2px] bg-gray-400" /> {/* Thicker line */}
+          <div className="absolute right-0 w-0 h-0 
+            border-t-[6px] border-t-transparent
+            border-l-[10px] border-l-gray-400
+            border-b-[6px] border-b-transparent"
+          />
         </div>
+
       </div>
 
-      {/* Right Content */}
-      <div className="flex-1 bg-white border border-gray-200 rounded-lg p-4 shadow-sm relative">
+      {/* Right Content - Fixed minimum width */}
+      <div className="flex-1 min-w-[400px] bg-white border border-gray-200 rounded-lg p-4 shadow-sm relative"> {/* Added min-width */}
         {isAdmin && (
           <div className="absolute top-2 right-2 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
             {data ? (
@@ -323,12 +336,12 @@ const MatrixRow = ({
         )}
         
         {data ? (
-          <div>
+          <div className="min-h-[60px]"> {/* Added minimum height */}
             <h3 className="font-medium text-gray-900 mb-2">{data.title}</h3>
             <p className="text-gray-600 text-sm">{data.detail_text}</p>
           </div>
         ) : (
-          <div className="flex items-center text-gray-500">
+          <div className="flex items-center text-gray-500 min-h-[60px]"> {/* Added minimum height */}
             <AlertCircle className="w-5 h-5 mr-2" />
             <span>No data available</span>
           </div>
@@ -338,3 +351,4 @@ const MatrixRow = ({
   );
 };
 export default MatrixComponent;
+
