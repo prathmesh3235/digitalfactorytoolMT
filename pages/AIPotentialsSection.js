@@ -26,49 +26,86 @@ const Modal = ({ children, onClose }) => (
   </div>
 );
 
-const AIPotentialBlock = ({ potential, isEditing, onEdit, onDelete, expanded, onToggle }) => (
-  <div 
-    className={`
-      relative w-full bg-white rounded-lg shadow-md border-l-4 border-[#00AB8E] 
-      hover:shadow-lg transition-all duration-300 cursor-pointer
-      ${expanded ? 'ring-2 ring-[#00AB8E] ring-opacity-50' : ''}
-    `}
-    onClick={onToggle}
-  >
-    <div className="p-4">
-      <div className="flex justify-between items-start">
-        <div className="flex-1">
-          <h3 className="font-semibold text-gray-800 mb-2">{potential.title}</h3>
-          <p className={`text-sm text-gray-600 ${expanded ? '' : 'line-clamp-2'}`}>
-            {potential.description}
-          </p>
-        </div>
-        {isEditing && (
-          <div className="flex gap-2 ml-4">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(potential);
-              }}
-              className="p-2 hover:bg-gray-100 rounded-full text-[#00AB8E] transition-colors"
-            >
-              <EditIcon />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(potential.id);
-              }}
-              className="p-2 hover:bg-gray-100 rounded-full text-red-500 transition-colors"
-            >
-              <DeleteIcon />
-            </button>
+const AIPotentialBlock = ({ potential, isEditing, onEdit, onDelete, expanded, onToggle }) => {
+  const [rating, setRating] = useState(potential.rating || 0);
+  const token = typeof window !== 'undefined' ? sessionStorage.getItem('token') : null;
+
+  const handleRatingChange = async (newRating) => {
+    setRating(newRating);
+    try {
+      await axios.post(
+        `/potential/${potential.id}/rating`,
+        { rating: newRating },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } catch (err) {
+      console.error("Failed to save rating:", err);
+    }
+  };
+
+  return (
+    <div 
+      className={`
+        relative w-full bg-white rounded-lg shadow-md border-l-4 border-[#00AB8E] 
+        hover:shadow-lg transition-all duration-300 cursor-pointer
+        ${expanded ? 'ring-2 ring-[#00AB8E] ring-opacity-50' : ''}
+      `}
+      onClick={onToggle}
+    >
+      <div className="p-4">
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <h3 className="font-semibold text-gray-800 mb-2">{potential.title}</h3>
+            <p className={`text-sm text-gray-600 ${expanded ? '' : 'line-clamp-2'}`}>
+              {potential.description}
+            </p>
+            <div className="mt-2 flex items-center text-sm text-gray-600">
+              <span className="font-medium">Rating:</span>
+              {isEditing ? (
+                <select
+                  value={rating}
+                  onChange={(e) => handleRatingChange(parseInt(e.target.value))}
+                  className="ml-2 border p-1 rounded focus:outline-none focus:ring-2 focus:ring-[#00AB8E]"
+                >
+                  <option value={0}>No Rating</option>
+                  <option value={1}>1</option>
+                  <option value={2}>2</option>
+                  <option value={3}>3</option>
+                  <option value={4}>4</option>
+                  <option value={5}>5</option>
+                </select>
+              ) : (
+                <span className="ml-2">{rating > 0 ? rating : 'N/A'}</span>
+              )}
+            </div>
           </div>
-        )}
+          {isEditing && (
+            <div className="flex gap-2 ml-4">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(potential);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-full text-[#00AB8E] transition-colors"
+              >
+                <EditIcon />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(potential.id);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-full text-red-500 transition-colors"
+              >
+                <DeleteIcon />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const AIPotentialsSection = ({ phaseId, isEditing }) => {
   const [potentials, setPotentials] = useState([]);
@@ -77,6 +114,8 @@ const AIPotentialsSection = ({ phaseId, isEditing }) => {
   const [editingPotential, setEditingPotential] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
   const [notification, setNotification] = useState(null);
+
+  const isAdmin = typeof window !== 'undefined' && sessionStorage.getItem('isAdmin') === 'true';
 
   useEffect(() => {
     fetchPotentials();
@@ -147,9 +186,11 @@ const AIPotentialsSection = ({ phaseId, isEditing }) => {
       <div className="mb-6 flex justify-between items-center">
         <div>
           <h2 className="text-[#00AB8E] text-xl font-semibold mb-2">AI Potentials</h2>
-          <p className="text-gray-600 text-sm">Advanced AI capabilities for optimizing factory planning processes</p>
+          <p className="text-gray-600 text-sm">
+            Advanced AI capabilities for optimizing factory planning processes
+          </p>
         </div>
-        {isEditing && (
+        {isEditing && isAdmin && (
           <button
             onClick={() => setEditingPotential({})}
             className="bg-[#00AB8E] text-white px-4 py-2 rounded-lg hover:bg-[#009579] transition-colors"
@@ -185,7 +226,8 @@ const AIPotentialsSection = ({ phaseId, isEditing }) => {
               <div className={`${index % 2 === 1 ? 'md:col-start-1 md:row-start-1' : ''}`}>
                 <AIPotentialBlock
                   potential={potential}
-                  isEditing={isEditing}
+                  // Allow editing (including rating) only if the component is in editing mode AND user is admin
+                  isEditing={isEditing && isAdmin}
                   onEdit={setEditingPotential}
                   onDelete={handleDelete}
                   expanded={expandedId === potential.id}

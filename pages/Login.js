@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { login } from '../utils/users';
+import { login } from '../utils/users'; 
 import Navbar from './Navbar';
 import SuccessDialog from './SuccessDialog';
 
@@ -21,7 +21,12 @@ const Login = () => {
 
     try {
       const data = await login(username, password);
+      // data now includes { token, user: { role: 'admin' or something else } }
+      const isAdmin = data.user.role === 'admin';
+
+      // Store token and isAdmin in sessionStorage
       sessionStorage.setItem('token', data.token);
+      sessionStorage.setItem('isAdmin', isAdmin ? 'true' : 'false');
       setIsDialogOpen(true);
     } catch (err) {
       setError(err.response ? err.response.data.message : 'Server error');

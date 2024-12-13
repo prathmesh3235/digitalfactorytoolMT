@@ -18,7 +18,6 @@ export default function PhasesComponent() {
   // New state for active tab
   const [activeTab, setActiveTab] = useState('factory');
 
-  // Existing functions remain the same...
   const formatPhaseDescription = (text) => {
     const words = text.split(" ");
     if (words.length <= 2) return text;
