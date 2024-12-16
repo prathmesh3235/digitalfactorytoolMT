@@ -8,6 +8,7 @@ import PhaseProfile from "./profiletab";
 import InterfaceMatrix from "./interfaceMatrix";
 import TopRatedPotentials from "./TopRatedPotentials";
 import ProductDevelopmentProfile from "./ProductDevelopmentProfile";
+import PhaseDetails from "./phaseDetails";
 
 export default function PhasesComponent() {
   const [phases, setPhases] = useState([]);
@@ -56,8 +57,23 @@ export default function PhasesComponent() {
     setActivePhase(phase);
   };
 
-  const handleEditClick = () => setIsEditing(true);
-  const handleSaveClick = () => setIsEditing(false);
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleSaveClick = async () => {
+    setLoading(true);
+    try {
+      // Save all pending changes here if needed
+      setIsEditing(false);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
+    } catch (error) {
+      console.error("Failed to save changes", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handlePhaseChange = (index, key, value) => {
     const newPhases = [...phases];
@@ -184,15 +200,23 @@ export default function PhasesComponent() {
         return <InterfaceMatrix activePhase={activePhase} phases={phases} />;
       default:
         return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
-            <PhaseProfile phaseId={activePhase?.id} isEditing={isEditing} />
-            <div className="grid grid-cols-1 gap-6 w-full">
-              <AIPotentialsSection
-                phaseId={activePhase?.id}
-                isEditing={isEditing}
-              />
+          <>
+            {renderPhaseNavigation()}
+            <PhaseDetails
+              activePhase={activePhase}
+              isLoggedIn={isLoggedIn}
+              isEditing={isEditing}
+            />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full mt-8">
+              <PhaseProfile phaseId={activePhase?.id} isEditing={isEditing} />
+              <div className="grid grid-cols-1 gap-6 w-full">
+                <AIPotentialsSection
+                  phaseId={activePhase?.id}
+                  isEditing={isEditing}
+                />
+              </div>
             </div>
-          </div>
+          </>
         );
     }
   };
@@ -212,50 +236,41 @@ export default function PhasesComponent() {
         </div>
       )}
 
-      {/* Edit / Add / Top Rated Buttons */}
       <div className="flex justify-center gap-3 my-4 w-full">
-        {isLoggedIn && !isEditing && (
+        {isLoggedIn && (
           <>
-            <button
-              onClick={handleEditClick}
-              className="bg-[#00AB8E] text-white px-4 py-2 rounded hover:bg-[#009579] transition-all"
-            >
-              Edit Information
-            </button>
-            <Link href="/cmsForm">
-              <button className="bg-[#B5BD00] text-white px-4 py-2 rounded hover:brightness-95 transition-all">
-                Add Information
+            {!isEditing ? (
+              <>
+                <button
+                  onClick={handleEditClick}
+                  className="bg-[#00AB8E] text-white px-4 py-2 rounded hover:bg-[#009579] transition-all"
+                >
+                  Edit Information
+                </button>
+                <Link href="/cmsForm">
+                  <button className="bg-[#B5BD00] text-white px-4 py-2 rounded hover:brightness-95 transition-all">
+                    Add Information
+                  </button>
+                </Link>
+                <button
+                  onClick={() => setShowTopRated(true)}
+                  className="bg-[#00AB8E] text-white px-4 py-2 rounded hover:bg-[#009579] transition-all"
+                >
+                  Top Rated AI Potentials
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={handleSaveClick}
+                className="bg-[#00AB8E] text-white px-4 py-2 rounded hover:bg-[#009579] transition-all"
+              >
+                Save Information
               </button>
-            </Link>
-            <button
-              onClick={() => setShowTopRated(true)}
-              className="bg-[#00AB8E] text-white px-4 py-2 rounded hover:bg-[#009579] transition-all"
-            >
-              Top Rated AI Potentials
-            </button>
+            )}
           </>
-        )}
-
-        {isLoggedIn && isEditing && (
-          <button
-            onClick={handleSaveClick}
-            className="bg-[#00AB8E] text-white px-4 py-2 rounded hover:bg-[#009579] transition-all"
-          >
-            Save Information
-          </button>
-        )}
-
-        {!isLoggedIn && (
-          <button
-            onClick={() => setShowTopRated(true)}
-            className="bg-[#00AB8E] text-white px-4 py-2 rounded hover:bg-[#009579] transition-all"
-          >
-            Top Rated AI Potentials
-          </button>
         )}
       </div>
 
-      {/* Tabs */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-2 w-full mb-4">
         {[
           { id: "factory", label: "Factory Planning" },
@@ -278,13 +293,8 @@ export default function PhasesComponent() {
         ))}
       </div>
 
-      {/* Phase Navigation (only for factory tab) */}
-      {activeTab === "factory" && renderPhaseNavigation()}
-
-      {/* Main Content */}
       {(activeTab === "product" || activePhase) && renderContent()}
 
-      {/* Top Rated Potentials Modal */}
       {showTopRated && (
         <TopRatedPotentials onClose={() => setShowTopRated(false)} />
       )}
