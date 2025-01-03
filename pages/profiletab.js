@@ -122,10 +122,8 @@ const PhaseProfile = ({ phaseId, isEditing }) => {
       setLoading(true);
       const response = await axios.get(`/profile/${phaseId}`);
       setProfileData({
-        phaseDetails: {
-          title: `Phase ${response.data.phaseDetails.phaseNo}: ${response.data.phaseDetails.title}`
-        },
-        sections: response.data.sections || []
+        phaseDetails: {}, // Removed phase number and phase name
+        sections: response.data.sections || [],
       });
       setError(null);
     } catch (err) {
@@ -144,7 +142,6 @@ const PhaseProfile = ({ phaseId, isEditing }) => {
   const handleSectionUpdate = async (sectionId, updateData) => {
     try {
       setLoading(true);
-
       const response = await axios.patch(
         `/profile/${phaseId}/section/${sectionId}`,
         updateData,
@@ -155,7 +152,6 @@ const PhaseProfile = ({ phaseId, isEditing }) => {
           },
         }
       );
-
       if (response.data.message === "Section updated successfully") {
         setSuccessMessage("Section updated successfully");
         setIsSuccessDialogOpen(true);
@@ -201,11 +197,9 @@ const PhaseProfile = ({ phaseId, isEditing }) => {
         message={successMessage}
       />
 
-      {/* Phase Title */}
+      {/* Detailed Profile Heading */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#00AB8E]">
-          {profileData.phaseDetails.title}
-        </h1>
+        <h2 className="text-3xl font-bold text-[#00AB8E]">Detailed Profile For Phase {phaseId}</h2>
         <div className="h-1 w-20 bg-[#00AB8E] mt-2"></div>
       </div>
 

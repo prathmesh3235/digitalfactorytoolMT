@@ -265,12 +265,10 @@ const AIPotentialsSection = ({ phaseId, isEditing }) => {
 
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-semibold text-teal-700">
-            AI Potentials
-          </h2>
-          <p className="text-gray-600">
+        <h2 className="text-3xl font-bold text-[#00AB8E]">AI Potentials For Phase {phaseId}</h2>
+          {/* <p className="text-gray-600">
             Advanced AI capabilities for optimizing factory planning
-          </p>
+          </p> */}
         </div>
         {isAdmin && isEditing && (
           <button

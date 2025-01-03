@@ -2,11 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Edit2, Trash2, Plus, Save, X } from 'lucide-react';
 import axiosInstance from '../utils/axiosInstance';
 
+// Loading screen component
+const LoadingScreen = () => (
+  <div className="flex justify-center items-center h-64">
+    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#00AB8E]"></div>
+  </div>
+);
+
 const PhaseDetails = ({ activePhase, isLoggedIn, isEditing }) => {
   const [expandedPhases, setExpandedPhases] = useState({});
   const [subphases, setSubphases] = useState([]);
   const [editMode, setEditMode] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [transitioning, setTransitioning] = useState(false); // For smooth transitions
   const [editData, setEditData] = useState({
     name: '',
     details: []
@@ -39,7 +47,7 @@ const PhaseDetails = ({ activePhase, isLoggedIn, isEditing }) => {
 
   const handleSave = async (subphaseId) => {
     if (!isEditing) return;
-    
+
     try {
       if (!editData.name.trim()) {
         alert('Please enter a name for the subphase');
@@ -79,7 +87,7 @@ const PhaseDetails = ({ activePhase, isLoggedIn, isEditing }) => {
 
   const addNewSubphase = () => {
     if (!isEditing) return;
-    
+
     setEditMode('new');
     setEditData({
       name: '',
@@ -88,10 +96,14 @@ const PhaseDetails = ({ activePhase, isLoggedIn, isEditing }) => {
   };
 
   const togglePhase = (phase) => {
-    setExpandedPhases(prev => ({
-      ...prev,
-      [phase]: !prev[phase]
-    }));
+    setTransitioning(true);
+    setTimeout(() => {
+      setExpandedPhases((prev) => ({
+        ...prev,
+        [phase]: !prev[phase]
+      }));
+      setTransitioning(false);
+    }, 150); // Transition duration
   };
 
   const handleAddDetail = () => {
@@ -118,13 +130,15 @@ const PhaseDetails = ({ activePhase, isLoggedIn, isEditing }) => {
     });
   };
 
-  if (!activePhase || loading) return null;
+  if (!activePhase) return null;
+
+  if (loading) return <LoadingScreen />;
 
   return (
     <div className="mt-8 w-full max-w-5xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
       <div className="bg-[#00AB8E] p-4 text-white flex justify-between items-center">
         <h2 className="text-xl font-semibold">
-          {activePhase.name}: Detailed Workflow
+          Subphases for {activePhase.name}
         </h2>
         {isLoggedIn && isEditing && (
           <button
@@ -135,15 +149,15 @@ const PhaseDetails = ({ activePhase, isLoggedIn, isEditing }) => {
             Add Subphase
           </button>
         )}
+      <div className="absolute bottom-[-16px] left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[16px] border-l-transparent border-r-[16px] border-r-transparent border-t-[16px] border-t-[#00AB8E]"></div>
       </div>
-      
-      <div className="divide-y divide-gray-200">
+      <div className={`divide-y divide-gray-200 ${transitioning ? 'opacity-50' : 'opacity-100'} transition-opacity duration-150`}>
         {editMode === 'new' && (
           <div className="p-4 bg-gray-50">
             <input
               type="text"
               value={editData.name}
-              onChange={(e) => setEditData({...editData, name: e.target.value})}
+              onChange={(e) => setEditData({ ...editData, name: e.target.value })}
               className="w-full p-2 border rounded mb-2"
               placeholder="Enter subphase name"
             />
@@ -194,7 +208,7 @@ const PhaseDetails = ({ activePhase, isLoggedIn, isEditing }) => {
                 <input
                   type="text"
                   value={editData.name}
-                  onChange={(e) => setEditData({...editData, name: e.target.value})}
+                  onChange={(e) => setEditData({ ...editData, name: e.target.value })}
                   className="w-full p-2 border rounded mb-2"
                   placeholder="Subphase name"
                 />
@@ -282,7 +296,7 @@ const PhaseDetails = ({ activePhase, isLoggedIn, isEditing }) => {
                     )}
                   </div>
                 </button>
-                
+
                 {expandedPhases[index] && (
                   <div className="px-16 pb-4 text-gray-600">
                     <ul className="list-disc space-y-2">
