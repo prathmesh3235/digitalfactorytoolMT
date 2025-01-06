@@ -14,7 +14,7 @@ const PhaseDetails = ({ activePhase, isLoggedIn, isEditing }) => {
   const [subphases, setSubphases] = useState([]);
   const [editMode, setEditMode] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [transitioning, setTransitioning] = useState(false); // For smooth transitions
+  const [transitioning, setTransitioning] = useState(false);
   const [editData, setEditData] = useState({
     name: '',
     details: []
@@ -103,7 +103,7 @@ const PhaseDetails = ({ activePhase, isLoggedIn, isEditing }) => {
         [phase]: !prev[phase]
       }));
       setTransitioning(false);
-    }, 150); // Transition duration
+    }, 150);
   };
 
   const handleAddDetail = () => {
@@ -131,185 +131,167 @@ const PhaseDetails = ({ activePhase, isLoggedIn, isEditing }) => {
   };
 
   if (!activePhase) return null;
-
   if (loading) return <LoadingScreen />;
 
   return (
-    <div className="mt-8 w-full max-w-5xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-      <div className="bg-[#00AB8E] p-4 text-white flex justify-between items-center">
-        <h2 className="text-xl font-semibold">
-          Subphases for {activePhase.name}
-        </h2>
-        {isLoggedIn && isEditing && (
-          <button
-            onClick={addNewSubphase}
-            className="bg-white text-[#00AB8E] px-3 py-1 rounded-md flex items-center gap-2 hover:bg-gray-100"
-          >
-            <Plus size={16} />
-            Add Subphase
-          </button>
-        )}
-      <div className="absolute bottom-[-16px] left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[16px] border-l-transparent border-r-[16px] border-r-transparent border-t-[16px] border-t-[#00AB8E]"></div>
+    <div className="mt-8 w-full max-w-5xl mx-auto">
+      <div className="bg-[#00AB8E] p-4 text-white rounded-t-lg">
+        <div className="flex justify-between items-center">
+          <h2 className="text-l font-semibold">
+            Subphases for {activePhase.name}
+          </h2>
+          {isLoggedIn && isEditing && (
+            <button
+              onClick={addNewSubphase}
+              className="bg-white text-[#00AB8E] px-3 py-1 rounded-md flex items-center gap-2 hover:bg-gray-100"
+            >
+              <Plus size={16} />
+              Add Subphase
+            </button>
+          )}
+        </div>
       </div>
-      <div className={`divide-y divide-gray-200 ${transitioning ? 'opacity-50' : 'opacity-100'} transition-opacity duration-150`}>
-        {editMode === 'new' && (
-          <div className="p-4 bg-gray-50">
-            <input
-              type="text"
-              value={editData.name}
-              onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-              className="w-full p-2 border rounded mb-2"
-              placeholder="Enter subphase name"
-            />
-            {editData.details.map((detail, i) => (
-              <div key={i} className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  value={detail}
-                  onChange={(e) => handleDetailChange(i, e.target.value)}
-                  className="flex-1 p-2 border rounded"
-                  placeholder="Enter detail"
-                />
-                <button
-                  onClick={() => handleRemoveDetail(i)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-            ))}
-            <div className="flex gap-2 mt-4">
-              <button
-                onClick={handleAddDetail}
-                className="text-[#00AB8E] hover:text-[#009579]"
-              >
-                Add Detail
-              </button>
-              <button
-                onClick={() => handleSave('new')}
-                className="bg-[#00AB8E] text-white px-3 py-1 rounded hover:bg-[#009579]"
-              >
-                <Save size={16} />
-              </button>
-              <button
-                onClick={() => setEditMode(null)}
-                className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
 
-        {subphases.map((subphase, index) => (
-          <div key={subphase.id} className="hover:bg-gray-50 transition-colors duration-150">
-            {editMode === subphase.id ? (
-              <div className="p-4">
-                <input
-                  type="text"
-                  value={editData.name}
-                  onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                  className="w-full p-2 border rounded mb-2"
-                  placeholder="Subphase name"
-                />
-                {editData.details.map((detail, i) => (
-                  <div key={i} className="flex gap-2 mb-2">
-                    <input
-                      type="text"
-                      value={detail}
-                      onChange={(e) => handleDetailChange(i, e.target.value)}
-                      className="flex-1 p-2 border rounded"
-                      placeholder="Detail"
-                    />
-                    <button
-                      onClick={() => handleRemoveDetail(i)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <X size={20} />
-                    </button>
-                  </div>
-                ))}
-                <div className="flex gap-2 mt-4">
+      <div className="bg-white rounded-b-lg shadow-lg">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 p-4">
+          {editMode === 'new' && (
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <input
+                type="text"
+                value={editData.name}
+                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                className="w-full p-2 border rounded mb-2"
+                placeholder="Enter subphase name"
+              />
+              {editData.details.map((detail, i) => (
+                <div key={i} className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={detail}
+                    onChange={(e) => handleDetailChange(i, e.target.value)}
+                    className="flex-1 p-2 border rounded"
+                    placeholder="Enter detail"
+                  />
                   <button
-                    onClick={handleAddDetail}
-                    className="text-[#00AB8E] hover:text-[#009579]"
+                    onClick={() => handleRemoveDetail(i)}
+                    className="text-red-500 hover:text-red-700"
                   >
-                    Add Detail
-                  </button>
-                  <button
-                    onClick={() => handleSave(subphase.id)}
-                    className="bg-[#00AB8E] text-white px-3 py-1 rounded hover:bg-[#009579]"
-                  >
-                    <Save size={16} />
-                  </button>
-                  <button
-                    onClick={() => setEditMode(null)}
-                    className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600"
-                  >
-                    Cancel
+                    <X size={20} />
                   </button>
                 </div>
-              </div>
-            ) : (
-              <>
+              ))}
+              <div className="flex gap-2 mt-4">
                 <button
-                  onClick={() => togglePhase(index)}
-                  className="w-full px-4 py-3 flex items-center justify-between text-left"
+                  onClick={handleAddDetail}
+                  className="text-[#00AB8E] hover:text-[#009579]"
                 >
-                  <div className="flex items-center">
-                    <span className="w-8 h-8 flex items-center justify-center bg-[#00AB8E] text-white rounded-full mr-3 text-sm">
-                      {index + 1}
-                    </span>
-                    <h3 className="text-lg font-medium text-gray-900">{subphase.name}</h3>
+                  Add Detail
+                </button>
+                <button
+                  onClick={() => handleSave('new')}
+                  className="bg-[#00AB8E] text-white px-3 py-1 rounded hover:bg-[#009579]"
+                >
+                  <Save size={16} />
+                </button>
+                <button
+                  onClick={() => setEditMode(null)}
+                  className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {subphases.map((subphase, index) => (
+            <div
+              key={subphase.id}
+              className="bg-gray-100 rounded-lg border border-gray-200 overflow-hidden"
+            >
+              {editMode === subphase.id ? (
+                <div className="p-4">
+                  <input
+                    type="text"
+                    value={editData.name}
+                    onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                    className="w-full p-2 border rounded mb-2"
+                    placeholder="Subphase name"
+                  />
+                  <div className="flex gap-2 mt-4">
+                    <button
+                      onClick={() => handleSave(subphase.id)}
+                      className="bg-[#00AB8E] text-white px-3 py-1 rounded hover:bg-[#009579]"
+                    >
+                      <Save size={16} />
+                    </button>
+                    <button
+                      onClick={() => setEditMode(null)}
+                      className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600"
+                    >
+                      Cancel
+                    </button>
                   </div>
-                  <div className="flex items-center gap-2">
+                </div>
+              ) : (
+                <div>
+                  <div className="bg-[#00AB8E] text-white p-2 flex justify-between items-center">
+                    <span>LP {index + 1}</span>
                     {isLoggedIn && isEditing && (
-                      <>
+                      <div className="flex gap-2">
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
+                          onClick={() => {
                             setEditMode(subphase.id);
                             setEditData({
                               name: subphase.name,
                               details: [...subphase.details]
                             });
                           }}
-                          className="text-gray-500 hover:text-[#00AB8E]"
+                          className="text-white hover:text-gray-200"
                         >
                           <Edit2 size={16} />
                         </button>
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(subphase.id);
-                          }}
-                          className="text-gray-500 hover:text-red-500"
+                          onClick={() => handleDelete(subphase.id)}
+                          className="text-white hover:text-red-300"
                         >
                           <Trash2 size={16} />
                         </button>
-                      </>
-                    )}
-                    {expandedPhases[index] ? (
-                      <ChevronUp className="w-5 h-5 text-gray-500" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-gray-500" />
+                      </div>
                     )}
                   </div>
-                </button>
-
-                {expandedPhases[index] && (
-                  <div className="px-16 pb-4 text-gray-600">
-                    <ul className="list-disc space-y-2">
-                      {subphase.details.map((detail, detailIndex) => (
-                        <li key={detailIndex}>{detail}</li>
-                      ))}
-                    </ul>
+                  <div className="p-4">
+                    <div className="font-medium">{subphase.name}</div>
+                    {expandedPhases[index] && (
+                      <div className="mt-2 text-sm text-gray-600">
+                        <ul className="list-disc pl-4">
+                          {subphase.details.map((detail, i) => (
+                            <li key={i}>{detail}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => togglePhase(index)}
+                      className="mt-2 text-[#00AB8E] hover:text-[#009579] flex items-center gap-1"
+                    >
+                      {expandedPhases[index] ? (
+                        <>
+                          <ChevronUp size={16} />
+                          <span>Show less</span>
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown size={16} />
+                          <span>Show more</span>
+                        </>
+                      )}
+                    </button>
                   </div>
-                )}
-              </>
-            )}
-          </div>
-        ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
