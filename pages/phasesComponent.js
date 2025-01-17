@@ -252,12 +252,7 @@ export default function PhasesComponent() {
                     Add Information
                   </button>
                 </Link>
-                <button
-                  onClick={() => setShowTopRated(true)}
-                  className="bg-[#00AB8E] text-white px-4 py-2 rounded hover:bg-[#009579] transition-all"
-                >
-                  Top Rated AI Potentials
-                </button>
+                
               </>
             ) : (
               <button
@@ -269,6 +264,12 @@ export default function PhasesComponent() {
             )}
           </>
         )}
+        <button
+                  onClick={() => setShowTopRated(true)}
+                  className="bg-[#00AB8E] text-white px-4 py-2 rounded hover:bg-[#009579] transition-all"
+                >
+                  Top Rated AI Potentials
+                </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-2 w-full mb-4">
