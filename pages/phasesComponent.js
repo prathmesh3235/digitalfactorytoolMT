@@ -1,59 +1,303 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import "../src/app/globals.css";
+import { update } from "../utils/phases.js";
+import { getPhases } from "../utils/phases.js";
+import Link from "next/link";
+import AIPotentialsSection from "./AIPotentialsSection";
+import PhaseProfile from "./profiletab";
+import InterfaceMatrix from "./interfaceMatrix";
+import TopRatedPotentials from "./TopRatedPotentials";
+import ProductDevelopmentProfile from "./ProductDevelopmentProfile";
+import PhaseDetails from "./phaseDetails";
 
 export default function PhasesComponent() {
-  const phases = ['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4', 'Phase 5'];
+  const [phases, setPhases] = useState([]);
   const [activePhase, setActivePhase] = useState(null);
-  const [activeTab, setActiveTab] = useState('profile');
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [activeTab, setActiveTab] = useState("factory");
+  const [showTopRated, setShowTopRated] = useState(false);
+
+  useEffect(() => {
+    const fetchPhases = async () => {
+      try {
+        const phasesData = await getPhases();
+        const formattedPhases = phasesData.map((phase) => ({
+          id: phase.id,
+          name: `Phase ${phase.phaseNo}`,
+          description: phase.title,
+          phaseNo: phase.phaseNo,
+        }));
+        setPhases(formattedPhases);
+        setActivePhase(formattedPhases[0]);
+      } catch (error) {
+        console.error("Failed to fetch phases", error);
+      }
+    };
+
+    fetchPhases();
+    const token = sessionStorage.getItem("token");
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  const formatPhaseDescription = (text) => {
+    const words = text.split(" ");
+    if (words.length <= 2) return text;
+    const midPoint = Math.ceil(words.length / 2);
+    const firstLine = words.slice(0, midPoint).join(" ");
+    const secondLine = words.slice(midPoint).join(" ");
+    return [firstLine, secondLine];
+  };
 
   const handlePhaseClick = (phase) => {
     setActivePhase(phase);
-    setActiveTab('profile');  // Reset tab to profile when phase changes
   };
 
-  const handleTabClick = (tab) => {
-    setActiveTab(tab);
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleSaveClick = async () => {
+    setLoading(true);
+    try {
+      // Save all pending changes here if needed
+      setIsEditing(false);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
+    } catch (error) {
+      console.error("Failed to save changes", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePhaseChange = (index, key, value) => {
+    const newPhases = [...phases];
+    newPhases[index][key] = value;
+    setPhases(newPhases);
+    setActivePhase(newPhases[index]);
+  };
+
+  const handleKeyPress = async (event, index) => {
+    if (event.key === "Enter") {
+      setLoading(true);
+      const phase = phases[index];
+      try {
+        await update(phase.id, {
+          title: phase.description,
+          phaseNo: phase.phaseNo,
+        });
+        setTimeout(() => {
+          setLoading(false);
+          setSuccess(true);
+          setTimeout(() => setSuccess(false), 2000);
+        }, 1000);
+      } catch (error) {
+        setLoading(false);
+        console.error("Failed to update phase", error);
+      }
+    }
+  };
+
+  const renderPhaseNavigation = () => (
+    <div className="w-full overflow-x-auto mb-6 pb-2">
+      <div className="flex min-w-max px-4">
+        {phases.map((phase, index) => {
+          const description = formatPhaseDescription(phase.description);
+          const isMultiline = Array.isArray(description);
+
+          return (
+            <button
+              key={index}
+              onClick={() => handlePhaseClick(phase)}
+              className={`relative h-[70px] min-w-[180px] flex items-center justify-center 
+                ${
+                  activePhase && activePhase.id === phase.id
+                    ? "bg-[#00AB8E] text-white"
+                    : "bg-[#e0e0e0] text-gray-700 hover:bg-[#00AB8E] hover:text-white"
+                } transition-colors duration-200 mx-2 first:ml-0 last:mr-0`}
+              style={{
+                clipPath:
+                  "polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%, 20px 50%)",
+                filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))",
+              }}
+            >
+              <div className="text-center px-3 flex flex-col items-center justify-center w-full py-2">
+                {isEditing ? (
+                  <>
+                    <input
+                      type="text"
+                      value={phase.name}
+                      onChange={(e) =>
+                        handlePhaseChange(index, "name", e.target.value)
+                      }
+                      className="bg-transparent border-none text-inherit text-center w-full text-sm font-medium"
+                      onKeyPress={(e) => handleKeyPress(e, index)}
+                    />
+                    <input
+                      type="text"
+                      value={phase.description}
+                      onChange={(e) =>
+                        handlePhaseChange(index, "description", e.target.value)
+                      }
+                      onKeyPress={(e) => handleKeyPress(e, index)}
+                      className="bg-transparent border-none text-inherit text-center text-xs w-full mt-1"
+                    />
+                  </>
+                ) : (
+                  <>
+                    <div className="font-medium text-sm mb-1">{phase.name}</div>
+                    {isMultiline ? (
+                      <>
+                        <div className="text-xs leading-tight">
+                          {description[0]}
+                        </div>
+                        <div className="text-xs leading-tight">
+                          {description[1]}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-xs">{description}</div>
+                    )}
+                  </>
+                )}
+              </div>
+              {index < phases.length - 1 && (
+                <div
+                  className="absolute right-[-30px] w-[20px] h-[2px] bg-gray-300 top-1/2 transform -translate-y-1/2 z-10"
+                  style={{ right: "-25px" }}
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case "product":
+        return <ProductDevelopmentProfile isEditing={isEditing} />;
+      case "ai":
+        return (
+          <>
+            {renderPhaseNavigation()}
+            <div className="w-full">
+              <AIPotentialsSection
+                phaseId={activePhase?.id}
+                isEditing={isEditing}
+                fullWidth={true}
+              />
+            </div>
+          </>
+        );
+      case "matrix":
+        return <InterfaceMatrix activePhase={activePhase} phases={phases} />;
+      default:
+        return (
+          <>
+            {renderPhaseNavigation()}
+            <PhaseDetails
+              activePhase={activePhase}
+              isLoggedIn={isLoggedIn}
+              isEditing={isEditing}
+            />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full mt-8">
+              <PhaseProfile phaseId={activePhase?.id} isEditing={isEditing} />
+              <div className="grid grid-cols-1 gap-6 w-full">
+                <AIPotentialsSection
+                  phaseId={activePhase?.id}
+                  isEditing={isEditing}
+                />
+              </div>
+            </div>
+          </>
+        );
+    }
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="flex justify-center space-x-4 mb-4">
-        <div className="bg-blue-800 text-white p-4 rounded">Factory Planning</div>
-        <div className="bg-blue-800 text-white p-4 rounded">AI Potentials in Factory Planning</div>
-        <div className="bg-blue-800 text-white p-4 rounded">Digitalisation Potentials in Factory Planning</div>
-      </div>
-      <div className="flex space-x-4">
-        {phases.map((phase, index) => (
-          <div
-            key={index}
-            className={`bg-green-500 text-white p-4 rounded flex items-center justify-center cursor-pointer ${
-              activePhase === phase ? 'bg-orange-500' : 'bg-green-500'
-            }`}
-            onClick={() => handlePhaseClick(phase)}
-          >
-            {phase}
-          </div>
-        ))}
-      </div>
-      {activePhase && (
-        <div className="flex space-x-4 mt-4">
-          <div
-            className={`p-4 rounded cursor-pointer ${
-              activeTab === 'profile' ? 'bg-orange-500 text-white' : 'bg-green-500 text-white'
-            }`}
-            onClick={() => handleTabClick('profile')}
-          >
-            Profile
-          </div>
-          <div
-            className={`p-4 rounded cursor-pointer ${
-              activeTab === 'ai-potential' ? 'bg-orange-500 text-white' : 'bg-green-500 text-white'
-            }`}
-            onClick={() => handleTabClick('ai-potential')}
-          >
-            AI Potential
+    <div className="relative flex flex-col items-center p-4 max-w-[1400px] mx-auto">
+      {loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center text-white text-2xl z-50">
+          Loading...
+        </div>
+      )}
+      {success && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-[#10B981] text-white text-center py-2 px-4 rounded shadow-lg">
+            Updated Successfully
           </div>
         </div>
+      )}
+
+      <div className="flex justify-center gap-3 my-4 w-full">
+        {isLoggedIn && (
+          <>
+            {!isEditing ? (
+              <>
+                <button
+                  onClick={handleEditClick}
+                  className="bg-[#00AB8E] text-white px-4 py-2 rounded hover:bg-[#009579] transition-all"
+                >
+                  Edit Information
+                </button>
+                <Link href="/cmsForm">
+                  <button className="bg-[#B5BD00] text-white px-4 py-2 rounded hover:brightness-95 transition-all">
+                    Add Information
+                  </button>
+                </Link>
+                
+              </>
+            ) : (
+              <button
+                onClick={handleSaveClick}
+                className="bg-[#00AB8E] text-white px-4 py-2 rounded hover:bg-[#009579] transition-all"
+              >
+                Save Information
+              </button>
+            )}
+          </>
+        )}
+        <button
+                  onClick={() => setShowTopRated(true)}
+                  className="bg-[#00AB8E] text-white px-4 py-2 rounded hover:bg-[#009579] transition-all"
+                >
+                  Top Rated AI Potentials
+                </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 w-full mb-4">
+        {[
+          { id: "factory", label: "Factory Planning" },
+          { id: "product", label: "Product Development" },
+          { id: "ai", label: "AI Potentials in Factory Planning" },
+          { id: "matrix", label: "Interface Matrix" },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`p-3 rounded text-center font-medium transition-colors duration-200
+              ${
+                activeTab === tab.id
+                  ? "bg-[#00AB8E] text-white"
+                  : "bg-[#e0e0e0] text-gray-700 hover:bg-[#00AB8E] hover:text-white"
+              }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {(activeTab === "product" || activePhase) && renderContent()}
+
+      {showTopRated && (
+        <TopRatedPotentials onClose={() => setShowTopRated(false)} />
       )}
     </div>
   );

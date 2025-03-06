@@ -1,0 +1,143 @@
+{
+    "Phase 1": {
+      "profile": {
+        "name": "Phase 1",
+        "description": "Setting of objectives",
+        "method": "Method 1",
+        "configuration": "Configuration 1",
+        "concept": "Concept 1",
+        "aim": "Aim 1",
+        "goal": "Goal 1",
+        "time_required": "Time Required 1",
+        "tasks": "Tasks 1",
+        "background": "Background 1"
+      },
+      "ai-potential": [
+        "Information about the 1 area sizes of functional units based on relevant key figures.",
+        "Information about the  area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures."
+      ]
+    },
+    "Phase 2": {
+      "profile": {
+        "name": "Phase 2",
+        "description": "Establishment of the product basis",
+        "method": "Method 2",
+        "configuration": "Configuration 2",
+        "concept": "Concept 2",
+        "aim": "Aim 2",
+        "goal": "Goal 2",
+        "time_required": "Time Required 2",
+        "tasks": "Tasks 2",
+        "background": "Background 2"
+      },
+      "ai-potential": [
+        "Information 2 about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures."
+      ]
+    },
+    "Phase 3": {
+      "profile": {
+        "name": "Phase 3",
+        "description": "Concept planning",
+        "method": "Method 3",
+        "configuration": "Configuration 3",
+        "concept": "Concept 3",
+        "aim": "Aim 3",
+        "goal": "Goal 3",
+        "time_required": "Time Required 3",
+        "tasks": "Tasks 3",
+        "background": "Background 3"
+      },
+      "ai-potential": [
+        "Information 3 about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures."
+      ]
+    },
+    "Phase 4": {
+      "profile": {
+        "name": "Phase 4",
+        "description": "Detailed planning",
+        "method": "Method 4",
+        "configuration": "Configuration 4",
+        "concept": "Concept 4",
+        "aim": "Aim 4",
+        "goal": "Goal 4",
+        "time_required": "Time Required 4",
+        "tasks": "Tasks 4",
+        "background": "Background 4"
+      },
+      "ai-potential": [
+        "Information 4 about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures."
+      ]
+    },
+    "Phase 5": {
+      "profile": {
+        "name": "Phase 5",
+        "description": "Preparation for realization",
+        "method": "Method 5",
+        "configuration": "Configuration 5",
+        "concept": "Concept 5",
+        "aim": "Aim 5",
+        "goal": "Goal 5",
+        "time_required": "Time Required 5",
+        "tasks": "Tasks 5",
+        "background": "Background 5"
+      },
+      "ai-potential": [
+        "Information 5 about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures."
+      ]
+    },
+    "Phase 6": {
+      "profile": {
+        "name": "Phase 6",
+        "description": "Monitoring of realization",
+        "method": "Method 6",
+        "configuration": "Configuration 6",
+        "concept": "Concept 6",
+        "aim": "Aim 6",
+        "goal": "Goal 6",
+        "time_required": "Time Required 6",
+        "tasks": "Tasks 6",
+        "background": "Background 6"
+      },
+      "ai-potential": [
+        "Information 6 about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures."
+      ]
+    },
+    "Phase 7": {
+      "profile": {
+        "name": "Phase 7",
+        "description": "Ramp-up support",
+        "method": "Method 7",
+        "configuration": "Configuration 7",
+        "concept": "Concept 7",
+        "aim": "Aim 7",
+        "goal": "Goal 7",
+        "time_required": "Time Required 7",
+        "tasks": "Tasks 7",
+        "background": "Background 7"
+      },
+      "ai-potential": [
+        "Information 7 about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures.",
+        "Information about the area sizes of functional units based on relevant key figures."
+      ]
+    }
+  }
+  
